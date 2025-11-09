@@ -3,12 +3,16 @@
 from __future__ import annotations
 
 import os
+from pathlib import Path
 from typing import Any, Dict, Optional
 from dotenv import load_dotenv
 
 import httpx
 
-load_dotenv()
+# Load .env file from the backend directory
+backend_dir = Path(__file__).parent
+env_path = backend_dir / ".env"
+load_dotenv(dotenv_path=env_path)
 
 CLAUDE_API_URL = "https://api.anthropic.com/v1/messages"
 

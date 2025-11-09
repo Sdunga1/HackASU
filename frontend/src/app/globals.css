@@ -68,5 +68,20 @@
     color: var(--asu-maroon);
     border: 1px solid rgba(140, 29, 64, 0.3);
   }
+
+  @keyframes slide-up {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-slide-up {
+    animation: slide-up 0.3s ease-out;
+  }
 }
 

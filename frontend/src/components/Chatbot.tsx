@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useMemo, useState, ReactNode } from "react";
+import { FormEvent, useState, ReactNode, useEffect, useRef } from "react";
 import clsx from "clsx";
 import styles from "./Chatbot.module.css";
 
@@ -22,7 +22,7 @@ const DEFAULTS = {
   heading: "Claude Assistant",
   tagline: "Your AI partner for hackathon success.",
   introMessage:
-    "Welcome!, How can I help you?"
+    "Hi! I'm Claude, your AI assistant. How can I help you today?"
 } as const;
 
 /**
@@ -201,16 +201,18 @@ export function Chatbot({
   ]);
   const [question, setQuestion] = useState("");
   const [isSubmitting, setSubmitting] = useState(false);
+  const chatLogRef = useRef<HTMLDivElement>(null);
 
-  const statusLabel = useMemo(
-    () => (isSubmitting ? "Thinking..." : "Send"),
-    [isSubmitting]
-  );
+  // Auto-scroll to bottom when new messages arrive
+  useEffect(() => {
+    if (chatLogRef.current) {
+      chatLogRef.current.scrollTop = chatLogRef.current.scrollHeight;
+    }
+  }, [messages, isSubmitting]);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  const handleSendMessage = async () => {
     const trimmed = question.trim();
-    if (!trimmed) {
+    if (!trimmed || isSubmitting) {
       return;
     }
 
@@ -222,6 +224,14 @@ export function Chatbot({
     setMessages((prev) => [...prev, userMessage]);
     setQuestion("");
     setSubmitting(true);
+    
+    // Reset textarea height
+    setTimeout(() => {
+      const textarea = document.getElementById('chat-question') as HTMLTextAreaElement;
+      if (textarea) {
+        textarea.style.height = 'auto';
+      }
+    }, 0);
 
     try {
       const response = await fetch(apiUrl, {
@@ -268,67 +278,134 @@ export function Chatbot({
     } finally {
       setSubmitting(false);
     }
+  };
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    await handleSendMessage();
   }
 
   return (
     <section className={clsx(styles.wrapper, className)}>
+      {/* Modern Minimal Header */}
       <div className={styles.header}>
-        <div>
-          <h2>{heading}</h2>
-          <p>{tagline}</p>
+        <div className={styles.headerLeft}>
+          <div className={styles.avatarContainer}>
+            <div className={styles.avatarCircle}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                <path d="M2 17l10 5 10-5" />
+                <path d="M2 12l10 5 10-5" />
+              </svg>
+            </div>
+          </div>
+          <div className={styles.headerInfo}>
+            <h2>{heading}</h2>
+            <div className={styles.headerMeta}>
+              <span className={styles.statusDot}></span>
+              <span>Active now</span>
+            </div>
+          </div>
         </div>
-        <span className={styles.statusDot} aria-hidden />
       </div>
 
-      <div className={styles.chatLog} role="log" aria-live="polite">
-        {messages.map((message) => (
-          <article
+      {/* Messages Container */}
+      <div className={styles.chatLog} role="log" aria-live="polite" ref={chatLogRef}>
+        {messages.map((message, index) => (
+          <div
             key={message.id}
             className={clsx(
-              styles.message,
-              message.variant === "user" && styles.messageUser
+              styles.messageGroup,
+              message.variant === "user" && styles.messageGroupUser
             )}
           >
-            <div className={styles.avatar} aria-hidden>
-              {message.variant === "user" ? "YOU" : "AI"}
-            </div>
-            <div className={styles.messageBody}>
-              <h3>
-                {message.variant === "user" ? "You" : "Claude"}
-              </h3>
-              <div className={styles.messageContent}>
-                {message.variant === "assistant" 
-                  ? formatResponseText(message.text)
-                  : <p>{message.text}</p>
-                }
+            {message.variant === "assistant" && (
+              <div className={styles.avatar}>
+                <div className={styles.avatarInitial}>C</div>
+              </div>
+            )}
+            <div className={styles.messageContentWrapper}>
+              <div
+                className={clsx(
+                  styles.messageBubble,
+                  message.variant === "user" && styles.messageBubbleUser
+                )}
+              >
+                <div className={styles.messageText}>
+                  {message.variant === "assistant" 
+                    ? formatResponseText(message.text)
+                    : <p>{message.text}</p>
+                  }
+                </div>
               </div>
             </div>
-          </article>
+            {message.variant === "user" && (
+              <div className={styles.avatar}>
+                <div className={styles.avatarInitialUser}>U</div>
+              </div>
+            )}
+          </div>
         ))}
+        {isSubmitting && (
+          <div className={styles.messageGroup}>
+            <div className={styles.avatar}>
+              <div className={styles.avatarInitial}>C</div>
+            </div>
+            <div className={styles.messageContentWrapper}>
+              <div className={styles.messageBubble}>
+                <div className={styles.typingIndicator}>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
-      <form className={styles.form} onSubmit={handleSubmit}>
-        <label htmlFor="chat-question" className={styles.srOnly}>
-          Your question
-        </label>
-        <textarea
-          id="chat-question"
-          name="question"
-          rows={2}
-          placeholder="How can I optimize my project workflow?"
-          value={question}
-          onChange={(event) => setQuestion(event.target.value)}
-          disabled={isSubmitting}
-          required
-        />
-        <button type="submit" disabled={isSubmitting}>
-          <span>{statusLabel}</span>
-          <span
-            className={clsx(styles.spinner, isSubmitting && styles.spinnerVisible)}
-            aria-hidden
-          />
-        </button>
-      </form>
+      {/* Modern Input Area */}
+      <div className={styles.inputArea}>
+        <form className={styles.form} onSubmit={handleSubmit}>
+          <div className={styles.inputContainer}>
+            <textarea
+              id="chat-question"
+              name="question"
+              rows={1}
+              placeholder="Message Claude..."
+              value={question}
+              onChange={(event) => {
+                setQuestion(event.target.value);
+                event.target.style.height = 'auto';
+                event.target.style.height = `${Math.min(event.target.scrollHeight, 120)}px`;
+              }}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' && !event.shiftKey) {
+                  event.preventDefault();
+                  handleSendMessage();
+                }
+              }}
+              disabled={isSubmitting}
+              className={styles.textarea}
+            />
+            <button
+              type="submit"
+              disabled={isSubmitting || !question.trim()}
+              className={styles.sendButton}
+              aria-label="Send message"
+            >
+              {isSubmitting ? (
+                <div className={styles.spinner}></div>
+              ) : (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="22" y1="2" x2="11" y2="13"></line>
+                  <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
     </section>
   );
 }
