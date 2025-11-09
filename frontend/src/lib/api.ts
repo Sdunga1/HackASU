@@ -62,16 +62,6 @@ export const assignIssue = async (issueId: string, assignee: string): Promise<vo
   }
 }
 
-export const getAIRecommendation = async (issueId: string): Promise<{ assignee: string; reasoning: string }> => {
-  try {
-    const response = await apiClient.get(`/ai/recommend-assignment/${issueId}`)
-    return response.data
-  } catch (error) {
-    console.error('Error getting AI recommendation:', error)
-    throw error
-  }
-}
-
 // SRS and Sprint Management APIs
 export interface UserStory {
   id: string

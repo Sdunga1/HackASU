@@ -317,24 +317,42 @@ export default function CommitNarrative() {
     switch (type) {
       case 'commit':
         return (
-          <div className="w-8 h-8 rounded-full bg-blue-900 flex items-center justify-center border border-blue-700">
-            <svg className="w-4 h-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div 
+            className="w-8 h-8 rounded-full flex items-center justify-center border" 
+            style={{
+              backgroundColor: isDark ? '#1e3a8a' : '#dbeafe',
+              borderColor: isDark ? '#3b82f6' : '#3b82f6',
+            }}
+          >
+            <svg className="w-4 h-4" style={{ color: isDark ? '#60a5fa' : '#2563eb' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
             </svg>
           </div>
         )
       case 'pr':
         return (
-          <div className="w-8 h-8 rounded-full bg-purple-900 flex items-center justify-center border border-purple-700">
-            <svg className="w-4 h-4 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div 
+            className="w-8 h-8 rounded-full flex items-center justify-center border"
+            style={{
+              backgroundColor: isDark ? '#581c87' : '#f3e8ff',
+              borderColor: isDark ? '#a855f7' : '#9333ea',
+            }}
+          >
+            <svg className="w-4 h-4" style={{ color: isDark ? '#c084fc' : '#9333ea' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
             </svg>
           </div>
         )
       case 'review':
         return (
-          <div className="w-8 h-8 rounded-full bg-amber-900 flex items-center justify-center border border-amber-700">
-            <svg className="w-4 h-4 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div 
+            className="w-8 h-8 rounded-full flex items-center justify-center border"
+            style={{
+              backgroundColor: isDark ? '#78350f' : '#fef3c7',
+              borderColor: isDark ? '#f59e0b' : '#f59e0b',
+            }}
+          >
+            <svg className="w-4 h-4" style={{ color: isDark ? '#fbbf24' : '#d97706' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
             </svg>
@@ -342,16 +360,28 @@ export default function CommitNarrative() {
         )
       case 'status':
         return (
-          <div className="w-8 h-8 rounded-full bg-green-900 flex items-center justify-center border border-green-700">
-            <svg className="w-4 h-4 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div 
+            className="w-8 h-8 rounded-full flex items-center justify-center border"
+            style={{
+              backgroundColor: isDark ? '#14532d' : '#dcfce7',
+              borderColor: isDark ? '#22c55e' : '#16a34a',
+            }}
+          >
+            <svg className="w-4 h-4" style={{ color: isDark ? '#4ade80' : '#16a34a' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
         )
       case 'comment':
         return (
-          <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center border border-gray-600">
-            <svg className="w-4 h-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div 
+            className="w-8 h-8 rounded-full flex items-center justify-center border"
+            style={{
+              backgroundColor: isDark ? '#374151' : '#f3f4f6',
+              borderColor: isDark ? '#6b7280' : '#9ca3af',
+            }}
+          >
+            <svg className="w-4 h-4" style={{ color: isDark ? '#d1d5db' : '#6b7280' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
             </svg>
           </div>
@@ -383,21 +413,43 @@ export default function CommitNarrative() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-1">
-          <div className="card p-0">
-            <div className="p-4" style={{ borderBottom: isDark ? '1px solid #444' : '1px solid #e5e5e5' }}>
+          <div className="p-0 rounded-lg overflow-hidden" style={{
+            backgroundColor: isDark ? '#252525' : '#ffffff',
+            border: `1px solid ${isDark ? 'rgba(140, 29, 64, 0.3)' : 'rgba(140, 29, 64, 0.2)'}`,
+            boxShadow: isDark ? '0 2px 8px rgba(0, 0, 0, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
+          }}>
+            <div className="p-4" style={{ borderBottom: isDark ? '1px solid #3a3a3a' : '1px solid #e5e5e5' }}>
               <h3 className="font-semibold" style={{ color: isDark ? '#f5f5f5' : '#1a1a1a' }}>Recent Tickets</h3>
             </div>
-            <div className="divide-y divide-gray-700">
-              {mockNarratives.map((ticket) => (
+            <div style={{ borderTop: isDark ? '1px solid #3a3a3a' : '1px solid #e5e5e5' }}>
+              {mockNarratives.map((ticket, index) => (
                 <button
                   key={ticket.ticketId}
                   onClick={() => setSelectedTicket(ticket)}
-                  className={`w-full text-left p-4 hover:bg-gray-750 transition-colors ${
-                    selectedTicket.ticketId === ticket.ticketId ? 'bg-gray-700' : ''
-                  }`}
+                  className="w-full text-left p-4 transition-colors"
+                  style={{
+                    backgroundColor: selectedTicket.ticketId === ticket.ticketId
+                      ? isDark
+                        ? 'rgba(140, 29, 64, 0.3)'
+                        : 'rgba(140, 29, 64, 0.15)'
+                      : 'transparent',
+                    borderTop: index > 0 ? (isDark ? '1px solid #3a3a3a' : '1px solid #e5e5e5') : 'none',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (selectedTicket.ticketId !== ticket.ticketId) {
+                      e.currentTarget.style.backgroundColor = isDark 
+                        ? 'rgba(140, 29, 64, 0.15)' 
+                        : 'rgba(140, 29, 64, 0.08)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (selectedTicket.ticketId !== ticket.ticketId) {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                    }
+                  }}
                 >
                   <div className="flex items-start justify-between mb-2">
-                    <span className="text-sm font-mono text-gray-400">{ticket.ticketId}</span>
+                    <span className="text-sm font-mono" style={{ color: isDark ? '#aaa' : '#666' }}>{ticket.ticketId}</span>
                     <span className="text-xs px-2 py-1 rounded-full border" style={{
                       backgroundColor: getStatusColor(ticket.status).bg,
                       color: getStatusColor(ticket.status).text,
@@ -406,12 +458,12 @@ export default function CommitNarrative() {
                       {ticket.status}
                     </span>
                   </div>
-                  <p className="text-sm font-medium text-gray-100 mb-2">{ticket.ticketTitle}</p>
-                  <div className="flex items-center gap-4 text-xs text-gray-400">
+                  <p className="text-sm font-medium mb-2" style={{ color: isDark ? '#f5f5f5' : '#1a1a1a' }}>{ticket.ticketTitle}</p>
+                  <div className="flex items-center gap-4 text-xs" style={{ color: isDark ? '#aaa' : '#666' }}>
                     <span>Est: {ticket.estimatedDays}d</span>
                     <span>Act: {ticket.actualDays}d</span>
                     {ticket.actualDays > ticket.estimatedDays && (
-                      <span className="text-red-400 font-medium">
+                      <span className="font-medium" style={{ color: isDark ? '#ef4444' : '#dc2626' }}>
                         +{ticket.actualDays - ticket.estimatedDays}d
                       </span>
                     )}
@@ -423,11 +475,15 @@ export default function CommitNarrative() {
         </div>
 
         <div className="lg:col-span-2 space-y-6">
-          <div className="card">
+          <div className="rounded-lg p-6" style={{
+            backgroundColor: isDark ? '#252525' : '#ffffff',
+            border: `1px solid ${isDark ? 'rgba(140, 29, 64, 0.3)' : 'rgba(140, 29, 64, 0.2)'}`,
+            boxShadow: isDark ? '0 2px 8px rgba(0, 0, 0, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
+          }}>
             <div className="flex items-start justify-between mb-4">
               <div>
                 <div className="flex items-center gap-3 mb-2">
-                  <h3 className="text-xl font-bold text-gray-100">{selectedTicket.ticketId}</h3>
+                  <h3 className="text-xl font-bold" style={{ color: isDark ? '#f5f5f5' : '#1a1a1a' }}>{selectedTicket.ticketId}</h3>
                   <span className="text-sm px-3 py-1 rounded-full border" style={{
                     backgroundColor: getStatusColor(selectedTicket.status).bg,
                     color: getStatusColor(selectedTicket.status).text,
@@ -436,24 +492,29 @@ export default function CommitNarrative() {
                     {selectedTicket.status}
                   </span>
                 </div>
-                <p className="text-gray-300 font-medium">{selectedTicket.ticketTitle}</p>
+                <p className="font-medium" style={{ color: isDark ? '#e5e5e5' : '#333' }}>{selectedTicket.ticketTitle}</p>
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-4 p-4 bg-gray-900 rounded-lg border border-gray-700">
+            <div className="grid grid-cols-3 gap-4 p-4 rounded-lg" style={{
+              backgroundColor: isDark ? 'rgba(140, 29, 64, 0.25)' : 'rgba(140, 29, 64, 0.15)',
+              border: `1px solid ${isDark ? 'rgba(140, 29, 64, 0.4)' : 'rgba(140, 29, 64, 0.3)'}`,
+            }}>
               <div>
-                <p className="text-xs text-gray-400 mb-1">Estimated</p>
-                <p className="text-2xl font-bold text-gray-100">{selectedTicket.estimatedDays}d</p>
+                <p className="text-xs mb-1" style={{ color: isDark ? '#aaa' : '#666' }}>Estimated</p>
+                <p className="text-2xl font-bold" style={{ color: isDark ? '#f5f5f5' : '#1a1a1a' }}>{selectedTicket.estimatedDays}d</p>
               </div>
               <div>
-                <p className="text-xs text-gray-400 mb-1">Actual</p>
-                <p className="text-2xl font-bold text-gray-100">{selectedTicket.actualDays}d</p>
+                <p className="text-xs mb-1" style={{ color: isDark ? '#aaa' : '#666' }}>Actual</p>
+                <p className="text-2xl font-bold" style={{ color: isDark ? '#f5f5f5' : '#1a1a1a' }}>{selectedTicket.actualDays}d</p>
               </div>
               <div>
-                <p className="text-xs text-gray-400 mb-1">Variance</p>
-                <p className={`text-2xl font-bold ${
-                  selectedTicket.actualDays > selectedTicket.estimatedDays ? 'text-red-400' : 'text-green-400'
-                }`}>
+                <p className="text-xs mb-1" style={{ color: isDark ? '#aaa' : '#666' }}>Variance</p>
+                <p className="text-2xl font-bold" style={{
+                  color: selectedTicket.actualDays > selectedTicket.estimatedDays 
+                    ? (isDark ? '#ef4444' : '#dc2626')
+                    : (isDark ? '#22c55e' : '#16a34a')
+                }}>
                   {selectedTicket.actualDays > selectedTicket.estimatedDays ? '+' : ''}
                   {selectedTicket.actualDays - selectedTicket.estimatedDays}d
                 </p>
@@ -461,26 +522,31 @@ export default function CommitNarrative() {
             </div>
 
             <div className="mt-6">
-              <h4 className="text-sm font-semibold text-gray-300 mb-2">AI-Generated Narrative</h4>
+              <h4 className="text-sm font-semibold mb-2" style={{ color: isDark ? '#e5e5e5' : '#333' }}>AI-Generated Narrative</h4>
               <div className="p-4 rounded" style={{
-                backgroundColor: 'rgba(140, 29, 64, 0.2)',
+                backgroundColor: isDark ? 'rgba(140, 29, 64, 0.25)' : 'rgba(140, 29, 64, 0.12)',
                 borderLeft: '4px solid #8C1D40'
               }}>
-                <p className="text-gray-200 leading-relaxed">{selectedTicket.narrative}</p>
+                <p className="leading-relaxed" style={{ color: isDark ? '#e5e5e5' : '#1a1a1a' }}>{selectedTicket.narrative}</p>
               </div>
             </div>
           </div>
 
-          <div className="card">
+          <div className="rounded-lg p-6" style={{
+            backgroundColor: isDark ? '#252525' : '#ffffff',
+            border: `1px solid ${isDark ? 'rgba(140, 29, 64, 0.3)' : 'rgba(140, 29, 64, 0.2)'}`,
+            boxShadow: isDark ? '0 2px 8px rgba(0, 0, 0, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
+          }}>
             <button
               onClick={() => toggleSection('timeline')}
               className="w-full flex items-center justify-between mb-4"
             >
-              <h4 className="text-lg font-semibold text-gray-100">Timeline</h4>
+              <h4 className="text-lg font-semibold" style={{ color: isDark ? '#f5f5f5' : '#1a1a1a' }}>Timeline</h4>
               <svg
-                className={`w-5 h-5 text-gray-400 transform transition-transform ${
+                className={`w-5 h-5 transform transition-transform ${
                   expandedSections.has('timeline') ? 'rotate-180' : ''
                 }`}
+                style={{ color: isDark ? '#aaa' : '#666' }}
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -496,19 +562,19 @@ export default function CommitNarrative() {
                     <div className="flex flex-col items-center">
                       {getEventIcon(event.type)}
                       {index < selectedTicket.timeline.length - 1 && (
-                        <div className="w-0.5 h-full bg-gray-700 mt-2"></div>
+                        <div className="w-0.5 h-full mt-2" style={{ backgroundColor: isDark ? '#444' : '#d1d5db' }}></div>
                       )}
                     </div>
                     <div className="flex-1 pb-6">
                       <div className="flex items-start justify-between mb-1">
-                        <p className="font-medium text-gray-100">{event.title}</p>
-                        <span className="text-xs text-gray-500">{event.timestamp}</span>
+                        <p className="font-medium" style={{ color: isDark ? '#f5f5f5' : '#1a1a1a' }}>{event.title}</p>
+                        <span className="text-xs" style={{ color: isDark ? '#888' : '#999' }}>{event.timestamp}</span>
                       </div>
-                      <p className="text-sm text-gray-400 mb-1">{event.description}</p>
+                      <p className="text-sm mb-1" style={{ color: isDark ? '#aaa' : '#666' }}>{event.description}</p>
                       {event.details && (
-                        <p className="text-xs text-gray-500 font-mono">{event.details}</p>
+                        <p className="text-xs font-mono" style={{ color: isDark ? '#888' : '#999' }}>{event.details}</p>
                       )}
-                      <p className="text-xs text-gray-500 mt-1">{event.author}</p>
+                      <p className="text-xs mt-1" style={{ color: isDark ? '#888' : '#999' }}>{event.author}</p>
                     </div>
                   </div>
                 ))}
@@ -516,16 +582,21 @@ export default function CommitNarrative() {
             )}
           </div>
 
-          <div className="card">
+          <div className="rounded-lg p-6" style={{
+            backgroundColor: isDark ? '#252525' : '#ffffff',
+            border: `1px solid ${isDark ? 'rgba(140, 29, 64, 0.3)' : 'rgba(140, 29, 64, 0.2)'}`,
+            boxShadow: isDark ? '0 2px 8px rgba(0, 0, 0, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
+          }}>
             <button
               onClick={() => toggleSection('insights')}
               className="w-full flex items-center justify-between mb-4"
             >
-              <h4 className="text-lg font-semibold text-gray-100">AI Insights</h4>
+              <h4 className="text-lg font-semibold" style={{ color: isDark ? '#f5f5f5' : '#1a1a1a' }}>AI Insights</h4>
               <svg
-                className={`w-5 h-5 text-gray-400 transform transition-transform ${
+                className={`w-5 h-5 transform transition-transform ${
                   expandedSections.has('insights') ? 'rotate-180' : ''
                 }`}
+                style={{ color: isDark ? '#aaa' : '#666' }}
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -541,7 +612,10 @@ export default function CommitNarrative() {
                     <h5 className="text-sm font-semibold mb-2" style={{ color: '#8C1D40' }}>Delays</h5>
                     <ul className="space-y-2">
                       {selectedTicket.insights.delays.map((delay, index) => (
-                        <li key={index} className="text-sm text-gray-300 pl-4" style={{ borderLeft: '2px solid #8C1D40' }}>
+                        <li key={index} className="text-sm pl-4" style={{ 
+                          color: isDark ? '#e5e5e5' : '#333',
+                          borderLeft: '2px solid #8C1D40' 
+                        }}>
                           {delay}
                         </li>
                       ))}
@@ -554,7 +628,10 @@ export default function CommitNarrative() {
                     <h5 className="text-sm font-semibold mb-2" style={{ color: '#FFC627' }}>Blockers</h5>
                     <ul className="space-y-2">
                       {selectedTicket.insights.blockers.map((blocker, index) => (
-                        <li key={index} className="text-sm text-gray-300 pl-4" style={{ borderLeft: '2px solid #FFC627' }}>
+                        <li key={index} className="text-sm pl-4" style={{ 
+                          color: isDark ? '#e5e5e5' : '#333',
+                          borderLeft: '2px solid #FFC627' 
+                        }}>
                           {blocker}
                         </li>
                       ))}
@@ -566,7 +643,10 @@ export default function CommitNarrative() {
                   <h5 className="text-sm font-semibold mb-2" style={{ color: '#FFC627' }}>Resolutions</h5>
                   <ul className="space-y-2">
                     {selectedTicket.insights.resolutions.map((resolution, index) => (
-                      <li key={index} className="text-sm text-gray-300 pl-4" style={{ borderLeft: '2px solid #FFC627' }}>
+                      <li key={index} className="text-sm pl-4" style={{ 
+                        color: isDark ? '#e5e5e5' : '#333',
+                        borderLeft: '2px solid #FFC627' 
+                      }}>
                         {resolution}
                       </li>
                     ))}

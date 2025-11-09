@@ -7,14 +7,16 @@ export default function Header() {
   const isDark = theme === 'dark'
 
   return (
-    <header style={{ 
-      background: isDark 
-        ? 'linear-gradient(135deg, #8C1D40 0%, #6B1530 50%, #8C1D40 100%)'
-        : 'linear-gradient(135deg, #8C1D40 0%, #a02350 50%, #8C1D40 100%)',
-      borderBottom: '2px solid rgba(255, 198, 39, 0.3)',
-      boxShadow: isDark ? '0 4px 20px rgba(140, 29, 64, 0.4)' : '0 4px 20px rgba(140, 29, 64, 0.2)',
-      transition: 'all 0.3s ease'
-    }}>
+    <header 
+      style={{ 
+        background: isDark 
+          ? 'linear-gradient(135deg, #8C1D40 0%, #6B1530 50%, #8C1D40 100%)'
+          : 'linear-gradient(135deg, #8C1D40 0%, #a02350 50%, #8C1D40 100%)',
+        borderBottom: '2px solid rgba(255, 198, 39, 0.3)',
+        boxShadow: isDark ? '0 4px 20px rgba(140, 29, 64, 0.4)' : '0 4px 20px rgba(140, 29, 64, 0.2)',
+        transition: 'all 0.3s ease'
+      }}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">

@@ -220,15 +220,20 @@ export default function Dashboard() {
 
   return (
     <div
-      className="min-h-screen"
+      className="flex flex-col h-screen overflow-hidden"
       style={{
         backgroundColor: isDark ? '#0a0a0a' : '#f5f5f5',
         transition: 'background-color 0.3s ease',
       }}
     >
-      <Header />
+      {/* Fixed Header */}
+      <div className="flex-shrink-0 z-40">
+        <Header />
+      </div>
 
+      {/* Fixed Tab Navigation */}
       <div
+        className="flex-shrink-0 z-30"
         style={{
           borderBottom: '1px solid rgba(140, 29, 64, 0.3)',
           backgroundColor: isDark ? '#1a1a1a' : '#ffffff',
@@ -272,7 +277,9 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Scrollable Content Area */}
+      <div className="flex-1 overflow-y-auto overflow-x-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {activeTab === 'overview' && (
           <>
             {stats && <ProjectStats stats={stats} />}
@@ -310,7 +317,7 @@ export default function Dashboard() {
               <div className="mt-12">
                 <div className="card p-8 text-center" style={{
                   borderColor: isDark ? 'rgba(140, 29, 64, 0.4)' : 'rgba(140, 29, 64, 0.3)',
-                  backgroundColor: isDark ? '#1a1a1a' : '#ffffff',
+                  backgroundColor: isDark ? '#252525' : '#ffffff',
                 }}>
                   <div className="p-4 rounded-lg inline-block mb-4" style={{
                     backgroundColor: isDark ? 'rgba(140, 29, 64, 0.2)' : 'rgba(140, 29, 64, 0.1)',
@@ -322,42 +329,9 @@ export default function Dashboard() {
                   <h3 className="text-xl font-semibold mb-2" style={{ color: isDark ? '#f5f5f5' : '#1a1a1a' }}>
                     No Sprints Generated Yet
                   </h3>
-                  <p className="text-sm mb-6 max-w-2xl mx-auto" style={{ color: isDark ? '#aaa' : '#666' }}>
-                    To see sprints and user stories, you need to process an SRS document first.
+                  <p className="text-sm max-w-2xl mx-auto" style={{ color: isDark ? '#aaa' : '#666' }}>
+                    To see sprints and user stories, process an SRS document and "Read the SRS document from Google Docs at [URL]"
                   </p>
-                  <div className="max-w-2xl mx-auto space-y-4">
-                    <div className="p-4 rounded-lg text-left" style={{
-                      backgroundColor: isDark ? 'rgba(255, 198, 39, 0.1)' : 'rgba(255, 198, 39, 0.05)',
-                      border: `1px solid ${isDark ? 'rgba(255, 198, 39, 0.2)' : 'rgba(255, 198, 39, 0.3)'}`,
-                    }}>
-                      <p className="text-sm font-semibold mb-2" style={{ color: '#FFC627' }}>
-                        Option 1: Use Cursor with MCP (Recommended)
-                      </p>
-                      <p className="text-xs" style={{ color: isDark ? '#aaa' : '#666' }}>
-                        In Cursor, ask: <code className="px-2 py-1 rounded text-xs" style={{
-                          backgroundColor: isDark ? 'rgba(140, 29, 64, 0.2)' : 'rgba(140, 29, 64, 0.1)',
-                          color: '#8C1D40'
-                        }}>"Read the SRS document from Google Docs at [URL] and send sprints to the dashboard"</code>
-                      </p>
-                    </div>
-                    <div className="p-4 rounded-lg text-left" style={{
-                      backgroundColor: isDark ? 'rgba(140, 29, 64, 0.1)' : 'rgba(140, 29, 64, 0.05)',
-                      border: `1px solid ${isDark ? 'rgba(140, 29, 64, 0.2)' : 'rgba(140, 29, 64, 0.3)'}`,
-                    }}>
-                      <p className="text-sm font-semibold mb-2" style={{ color: isDark ? '#f5f5f5' : '#1a1a1a' }}>
-                        Option 2: Test with Script
-                      </p>
-                      <p className="text-xs mb-2" style={{ color: isDark ? '#aaa' : '#666' }}>
-                        Run the test script from the project root:
-                      </p>
-                      <code className="block px-3 py-2 rounded text-xs" style={{
-                        backgroundColor: isDark ? '#2a2a2a' : '#f5f5f5',
-                        color: isDark ? '#f5f5f5' : '#1a1a1a',
-                      }}>
-                        ./test_srs_processing.sh
-                      </code>
-                    </div>
-                  </div>
                 </div>
               </div>
             )}
@@ -390,9 +364,9 @@ export default function Dashboard() {
                     <div
                       key={sprint.id}
                       onClick={() => setSelectedSprint(selectedSprint?.id === sprint.id ? null : sprint)}
-                      className="cursor-pointer"
+                      className="cursor-pointer transition-all duration-200"
                     >
-                      <SprintCard sprint={sprint} />
+                      <SprintCard sprint={sprint} isSelected={selectedSprint?.id === sprint.id} />
                     </div>
                   ))}
                 </div>
@@ -402,25 +376,83 @@ export default function Dashboard() {
             {/* User Stories Section */}
             {selectedSprint && selectedSprint.userStories && selectedSprint.userStories.length > 0 && (
               <div className="mt-12">
-                <div className="flex justify-between items-center mb-6">
-                  <div>
-                    <h2
-                      className="text-2xl font-bold"
-                      style={{ color: isDark ? '#f5f5f5' : '#1a1a1a' }}
+                <div className="mb-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-4">
+                      <div
+                        className="w-1.5 h-14 rounded-full"
+                        style={{ backgroundColor: '#8C1D40' }}
+                      />
+                      <div className="flex-1">
+                        <h2
+                          className="text-2xl font-bold mb-2"
+                          style={{ color: isDark ? '#f5f5f5' : '#1a1a1a' }}
+                        >
+                          User Stories
+                        </h2>
+                        <div
+                          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg"
+                          style={{
+                            backgroundColor: isDark
+                              ? 'rgba(140, 29, 64, 0.2)'
+                              : 'rgba(140, 29, 64, 0.1)',
+                            border: `2px solid ${
+                              isDark
+                                ? 'rgba(140, 29, 64, 0.4)'
+                                : 'rgba(140, 29, 64, 0.3)'
+                            }`,
+                          }}
+                        >
+                          <span
+                            className="text-sm font-semibold"
+                            style={{ color: isDark ? '#aaa' : '#666' }}
+                          >
+                            Sprint:
+                          </span>
+                          <span
+                            className="text-lg font-bold"
+                            style={{ color: '#8C1D40' }}
+                          >
+                            {selectedSprint.name}
+                          </span>
+                          <span
+                            className="ml-2 px-2.5 py-1 rounded-full text-xs font-bold"
+                            style={{
+                              backgroundColor: '#8C1D40',
+                              color: '#ffffff',
+                            }}
+                          >
+                            {selectedSprint.userStories?.length || 0} Stories
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setSelectedSprint(null)}
+                      className="ml-4 p-2 rounded-lg hover:bg-opacity-20 transition-colors"
+                      style={{
+                        backgroundColor: isDark
+                          ? 'rgba(140, 29, 64, 0.2)'
+                          : 'rgba(140, 29, 64, 0.1)',
+                        color: isDark ? '#aaa' : '#666',
+                      }}
+                      title="Close"
                     >
-                      User Stories
-                    </h2>
-                    <p className="text-sm mt-1" style={{ color: isDark ? '#aaa' : '#666' }}>
-                      {selectedSprint.name}
-                    </p>
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M6 18L18 6M6 6l12 12"
+                        />
+                      </svg>
+                    </button>
                   </div>
-                  <button
-                    onClick={() => setSelectedSprint(null)}
-                    className="text-sm font-medium transition-colors"
-                    style={{ color: isDark ? '#aaa' : '#666' }}
-                  >
-                    Close
-                  </button>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -474,6 +506,7 @@ export default function Dashboard() {
         {activeTab === 'narratives' && <CommitNarrative />}
 
         {activeTab === 'anomalies' && <AnomalyDetector />}
+        </div>
       </div>
 
       {/* Floating Chat Button */}

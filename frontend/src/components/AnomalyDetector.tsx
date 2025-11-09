@@ -192,7 +192,7 @@ export default function AnomalyDetector() {
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case 'high':
-        return { bg: 'rgba(140, 29, 64, 0.2)', text: '#FFC627', border: 'rgba(140, 29, 64, 0.5)' }
+        return { bg: 'rgba(239, 68, 68, 0.2)', text: '#ef4444', border: 'rgba(239, 68, 68, 0.5)' }
       case 'medium':
         return { bg: 'rgba(255, 198, 39, 0.15)', text: '#FFC627', border: 'rgba(255, 198, 39, 0.4)' }
       case 'low':
@@ -206,7 +206,7 @@ export default function AnomalyDetector() {
     switch (severity) {
       case 'high':
         return (
-          <svg className="w-5 h-5" style={{ color: '#8C1D40' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="w-5 h-5" style={{ color: '#ef4444' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
           </svg>
         )
@@ -264,8 +264,11 @@ export default function AnomalyDetector() {
               <p className="text-sm" style={{ color: isDark ? '#aaa' : '#666' }}>Total Anomalies</p>
               <p className="text-3xl font-bold mt-1" style={{ color: isDark ? '#f5f5f5' : '#1a1a1a' }}>{mockAnomalies.length}</p>
             </div>
-            <div className="w-12 h-12 bg-gray-700 rounded-lg flex items-center justify-center">
-              <svg className="w-6 h-6 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{
+              backgroundColor: isDark ? 'rgba(100, 100, 100, 0.2)' : 'rgba(100, 100, 100, 0.1)',
+              border: `1px solid ${isDark ? 'rgba(100, 100, 100, 0.3)' : 'rgba(100, 100, 100, 0.2)'}`
+            }}>
+              <svg className="w-6 h-6" style={{ color: isDark ? '#aaa' : '#666' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
               </svg>
             </div>
@@ -276,13 +279,13 @@ export default function AnomalyDetector() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm" style={{ color: isDark ? '#aaa' : '#666' }}>High Severity</p>
-              <p className="text-3xl font-bold mt-1" style={{ color: '#8C1D40' }}>{severityCount.high || 0}</p>
+              <p className="text-3xl font-bold mt-1" style={{ color: '#ef4444' }}>{severityCount.high || 0}</p>
             </div>
             <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{
-              backgroundColor: 'rgba(140, 29, 64, 0.3)',
-              border: '1px solid rgba(140, 29, 64, 0.5)'
+              backgroundColor: 'rgba(239, 68, 68, 0.3)',
+              border: '1px solid rgba(239, 68, 68, 0.5)'
             }}>
-              <svg className="w-6 h-6" style={{ color: '#FFC627' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-6 h-6" style={{ color: '#ef4444' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
             </div>
@@ -293,7 +296,7 @@ export default function AnomalyDetector() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm" style={{ color: isDark ? '#aaa' : '#666' }}>Medium Severity</p>
-              <p className="text-3xl font-bold mt-1" style={{ color: isDark ? '#FFC627' : '#8C1D40' }}>{severityCount.medium || 0}</p>
+              <p className="text-3xl font-bold mt-1" style={{ color: '#FFC627' }}>{severityCount.medium || 0}</p>
             </div>
             <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{
               backgroundColor: 'rgba(255, 198, 39, 0.15)',
@@ -327,14 +330,14 @@ export default function AnomalyDetector() {
       <div className="card">
         <div className="flex items-center gap-4 mb-6">
           <div>
-            <label className="text-sm font-medium mb-1 block" style={{ color: isDark ? '#ccc' : '#333' }}>Severity</label>
+            <label className="text-sm font-medium mb-1 block" style={{ color: isDark ? '#f5f5f5' : '#1a1a1a' }}>Severity</label>
             <select
               value={filterSeverity}
               onChange={(e) => setFilterSeverity(e.target.value as any)}
               className="px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               style={{
-                backgroundColor: isDark ? '#333' : '#fff',
-                border: isDark ? '1px solid #555' : '1px solid #ddd',
+                backgroundColor: isDark ? '#1a1a1a' : '#ffffff',
+                border: `1px solid ${isDark ? 'rgba(140, 29, 64, 0.3)' : 'rgba(140, 29, 64, 0.2)'}`,
                 color: isDark ? '#f5f5f5' : '#1a1a1a'
               }}
             >
@@ -346,14 +349,14 @@ export default function AnomalyDetector() {
           </div>
 
           <div>
-            <label className="text-sm font-medium mb-1 block" style={{ color: isDark ? '#ccc' : '#333' }}>Type</label>
+            <label className="text-sm font-medium mb-1 block" style={{ color: isDark ? '#f5f5f5' : '#1a1a1a' }}>Type</label>
             <select
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
               className="px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               style={{
-                backgroundColor: isDark ? '#333' : '#fff',
-                border: isDark ? '1px solid #555' : '1px solid #ddd',
+                backgroundColor: isDark ? '#1a1a1a' : '#ffffff',
+                border: `1px solid ${isDark ? 'rgba(140, 29, 64, 0.3)' : 'rgba(140, 29, 64, 0.2)'}`,
                 color: isDark ? '#f5f5f5' : '#1a1a1a'
               }}
             >
@@ -371,15 +374,25 @@ export default function AnomalyDetector() {
           {filteredAnomalies.map((anomaly) => (
             <div
               key={anomaly.id}
-              className="border border-gray-700 rounded-lg p-4 hover:shadow-xl hover:border-gray-600 transition-all cursor-pointer"
+              className="rounded-lg p-4 hover:shadow-xl transition-all cursor-pointer"
+              style={{
+                border: `1px solid ${isDark ? 'rgba(140, 29, 64, 0.3)' : 'rgba(140, 29, 64, 0.2)'}`,
+                backgroundColor: isDark ? '#252525' : '#ffffff',
+              }}
               onClick={() => setSelectedAnomaly(anomaly)}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = isDark ? 'rgba(140, 29, 64, 0.5)' : 'rgba(140, 29, 64, 0.4)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = isDark ? 'rgba(140, 29, 64, 0.3)' : 'rgba(140, 29, 64, 0.2)'
+              }}
             >
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-start gap-3 flex-1">
                   {getSeverityIcon(anomaly.severity)}
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-semibold text-gray-100">{anomaly.title}</h3>
+                      <h3 className="font-semibold" style={{ color: isDark ? '#f5f5f5' : '#1a1a1a' }}>{anomaly.title}</h3>
                       <span className="text-xs px-2 py-1 rounded-full border" style={{
                         backgroundColor: getSeverityColor(anomaly.severity).bg,
                         color: getSeverityColor(anomaly.severity).text,
@@ -388,22 +401,22 @@ export default function AnomalyDetector() {
                         {anomaly.severity.toUpperCase()}
                       </span>
                       <span className="text-xs px-2 py-1 rounded-full border" style={{
-                        backgroundColor: 'rgba(100, 100, 100, 0.15)',
-                        color: '#aaa',
-                        borderColor: 'rgba(100, 100, 100, 0.3)'
+                        backgroundColor: isDark ? 'rgba(100, 100, 100, 0.15)' : 'rgba(100, 100, 100, 0.1)',
+                        color: isDark ? '#aaa' : '#666',
+                        borderColor: isDark ? 'rgba(100, 100, 100, 0.3)' : 'rgba(100, 100, 100, 0.2)'
                       }}>
                         {getTypeLabel(anomaly.type)}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-400">{anomaly.description}</p>
+                    <p className="text-sm" style={{ color: isDark ? '#aaa' : '#666' }}>{anomaly.description}</p>
                   </div>
                 </div>
-                <span className="text-xs text-gray-500 whitespace-nowrap ml-4">{anomaly.detectedAt}</span>
+                <span className="text-xs whitespace-nowrap ml-4" style={{ color: isDark ? '#888' : '#999' }}>{anomaly.detectedAt}</span>
               </div>
 
               <div className="flex flex-wrap gap-2 text-xs">
                 {anomaly.affectedItems.tickets && (
-                  <div className="flex items-center gap-1 text-gray-400">
+                  <div className="flex items-center gap-1" style={{ color: isDark ? '#aaa' : '#666' }}>
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                     </svg>
@@ -411,7 +424,7 @@ export default function AnomalyDetector() {
                   </div>
                 )}
                 {anomaly.affectedItems.developers && (
-                  <div className="flex items-center gap-1 text-gray-400">
+                  <div className="flex items-center gap-1" style={{ color: isDark ? '#aaa' : '#666' }}>
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
@@ -425,13 +438,30 @@ export default function AnomalyDetector() {
       </div>
 
       {selectedAnomaly && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50" onClick={() => setSelectedAnomaly(null)}>
-          <div className="bg-gray-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-gray-700" onClick={(e) => e.stopPropagation()}>
-            <div className="sticky top-0 bg-gray-800 border-b border-gray-700 p-6 flex items-start justify-between">
+        <div 
+          className="fixed inset-0 flex items-center justify-center p-4 z-50" 
+          style={{ backgroundColor: isDark ? 'rgba(0, 0, 0, 0.75)' : 'rgba(0, 0, 0, 0.5)' }}
+          onClick={() => setSelectedAnomaly(null)}
+        >
+          <div 
+            className="rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto" 
+            style={{
+              backgroundColor: isDark ? '#252525' : '#ffffff',
+              border: `1px solid ${isDark ? 'rgba(140, 29, 64, 0.3)' : 'rgba(140, 29, 64, 0.2)'}`,
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div 
+              className="sticky top-0 p-6 flex items-start justify-between"
+              style={{
+                backgroundColor: isDark ? '#252525' : '#ffffff',
+                borderBottom: `1px solid ${isDark ? 'rgba(140, 29, 64, 0.3)' : 'rgba(140, 29, 64, 0.2)'}`,
+              }}
+            >
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
                   {getSeverityIcon(selectedAnomaly.severity)}
-                  <h2 className="text-2xl font-bold text-gray-100">{selectedAnomaly.title}</h2>
+                  <h2 className="text-2xl font-bold" style={{ color: isDark ? '#f5f5f5' : '#1a1a1a' }}>{selectedAnomaly.title}</h2>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-sm px-3 py-1 rounded-full border" style={{
@@ -442,18 +472,21 @@ export default function AnomalyDetector() {
                     {selectedAnomaly.severity.toUpperCase()}
                   </span>
                   <span className="text-sm px-3 py-1 rounded-full border" style={{
-                    backgroundColor: 'rgba(100, 100, 100, 0.15)',
-                    color: '#aaa',
-                    borderColor: 'rgba(100, 100, 100, 0.3)'
+                    backgroundColor: isDark ? 'rgba(100, 100, 100, 0.15)' : 'rgba(100, 100, 100, 0.1)',
+                    color: isDark ? '#aaa' : '#666',
+                    borderColor: isDark ? 'rgba(100, 100, 100, 0.3)' : 'rgba(100, 100, 100, 0.2)'
                   }}>
                     {getTypeLabel(selectedAnomaly.type)}
                   </span>
-                  <span className="text-sm text-gray-500">{selectedAnomaly.detectedAt}</span>
+                  <span className="text-sm" style={{ color: isDark ? '#888' : '#999' }}>{selectedAnomaly.detectedAt}</span>
                 </div>
               </div>
               <button
                 onClick={() => setSelectedAnomaly(null)}
-                className="text-gray-400 hover:text-gray-200 transition-colors"
+                style={{ color: isDark ? '#aaa' : '#666' }}
+                className="transition-colors hover:opacity-70"
+                onMouseEnter={(e) => e.currentTarget.style.color = isDark ? '#f5f5f5' : '#1a1a1a'}
+                onMouseLeave={(e) => e.currentTarget.style.color = isDark ? '#aaa' : '#666'}
               >
                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -463,26 +496,33 @@ export default function AnomalyDetector() {
 
             <div className="p-6 space-y-6">
               <div>
-                <h3 className="text-lg font-semibold text-gray-100 mb-2">Description</h3>
-                <p className="text-gray-300">{selectedAnomaly.description}</p>
+                <h3 className="text-lg font-semibold mb-2" style={{ color: isDark ? '#f5f5f5' : '#1a1a1a' }}>Description</h3>
+                <p style={{ color: isDark ? '#aaa' : '#666' }}>{selectedAnomaly.description}</p>
               </div>
 
               {selectedAnomaly.metrics && selectedAnomaly.metrics.length > 0 && (
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-100 mb-3">Metrics</h3>
+                  <h3 className="text-lg font-semibold mb-3" style={{ color: isDark ? '#f5f5f5' : '#1a1a1a' }}>Metrics</h3>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     {selectedAnomaly.metrics.map((metric, index) => (
-                      <div key={index} className="p-4 bg-gray-900 border border-gray-700 rounded-lg">
-                        <p className="text-sm text-gray-400 mb-1">{metric.label}</p>
+                      <div 
+                        key={index} 
+                        className="p-4 rounded-lg"
+                        style={{
+                          backgroundColor: isDark ? '#1a1a1a' : '#f5f5f5',
+                          border: `1px solid ${isDark ? 'rgba(140, 29, 64, 0.3)' : 'rgba(140, 29, 64, 0.2)'}`
+                        }}
+                      >
+                        <p className="text-sm mb-1" style={{ color: isDark ? '#aaa' : '#666' }}>{metric.label}</p>
                         <div className="flex items-center gap-2">
-                          <p className="text-2xl font-bold text-gray-100">{metric.value}</p>
+                          <p className="text-2xl font-bold" style={{ color: isDark ? '#f5f5f5' : '#1a1a1a' }}>{metric.value}</p>
                           {metric.trend === 'up' && (
-                            <svg className="w-5 h-5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg className="w-5 h-5" style={{ color: '#ef4444' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                             </svg>
                           )}
                           {metric.trend === 'down' && (
-                            <svg className="w-5 h-5 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg className="w-5 h-5" style={{ color: '#22c55e' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
                             </svg>
                           )}
@@ -494,38 +534,49 @@ export default function AnomalyDetector() {
               )}
 
               <div>
-                <h3 className="text-lg font-semibold text-gray-100 mb-2">AI Analysis</h3>
-                <div className="p-4 rounded" style={{
-                  backgroundColor: 'rgba(140, 29, 64, 0.2)',
-                  borderLeft: '4px solid #8C1D40'
-                }}>
-                  <p className="text-gray-200 leading-relaxed">{selectedAnomaly.aiAnalysis}</p>
+                <h3 className="text-lg font-semibold mb-2" style={{ color: isDark ? '#f5f5f5' : '#1a1a1a' }}>AI Analysis</h3>
+                <div 
+                  className="p-4 rounded"
+                  style={{
+                    backgroundColor: isDark ? 'rgba(140, 29, 64, 0.2)' : 'rgba(140, 29, 64, 0.1)',
+                    borderLeft: '4px solid #8C1D40'
+                  }}
+                >
+                  <p className="leading-relaxed" style={{ color: isDark ? '#f5f5f5' : '#1a1a1a' }}>{selectedAnomaly.aiAnalysis}</p>
                 </div>
               </div>
 
               <div>
-                <h3 className="text-lg font-semibold text-gray-100 mb-3">Suggested Actions</h3>
+                <h3 className="text-lg font-semibold mb-3" style={{ color: isDark ? '#f5f5f5' : '#1a1a1a' }}>Suggested Actions</h3>
                 <ul className="space-y-2">
                   {selectedAnomaly.suggestedActions.map((action, index) => (
                     <li key={index} className="flex items-start gap-3">
                       <svg className="w-5 h-5 mt-0.5 flex-shrink-0" style={{ color: '#FFC627' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
-                      <span className="text-gray-300">{action}</span>
+                      <span style={{ color: isDark ? '#aaa' : '#666' }}>{action}</span>
                     </li>
                   ))}
                 </ul>
               </div>
 
               <div>
-                <h3 className="text-lg font-semibold text-gray-100 mb-3">Affected Items</h3>
+                <h3 className="text-lg font-semibold mb-3" style={{ color: isDark ? '#f5f5f5' : '#1a1a1a' }}>Affected Items</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {selectedAnomaly.affectedItems.tickets && (
                     <div>
-                      <h4 className="text-sm font-medium text-gray-300 mb-2">Tickets</h4>
+                      <h4 className="text-sm font-medium mb-2" style={{ color: isDark ? '#aaa' : '#666' }}>Tickets</h4>
                       <div className="space-y-1">
                         {selectedAnomaly.affectedItems.tickets.map((ticket, index) => (
-                          <div key={index} className="text-sm font-mono bg-gray-700 text-gray-200 px-3 py-1 rounded border border-gray-600">
+                          <div 
+                            key={index} 
+                            className="text-sm font-mono px-3 py-1 rounded"
+                            style={{
+                              backgroundColor: isDark ? '#1a1a1a' : '#f5f5f5',
+                              color: isDark ? '#f5f5f5' : '#1a1a1a',
+                              border: `1px solid ${isDark ? 'rgba(140, 29, 64, 0.3)' : 'rgba(140, 29, 64, 0.2)'}`
+                            }}
+                          >
                             {ticket}
                           </div>
                         ))}
@@ -534,10 +585,18 @@ export default function AnomalyDetector() {
                   )}
                   {selectedAnomaly.affectedItems.developers && (
                     <div>
-                      <h4 className="text-sm font-medium text-gray-300 mb-2">Developers</h4>
+                      <h4 className="text-sm font-medium mb-2" style={{ color: isDark ? '#aaa' : '#666' }}>Developers</h4>
                       <div className="space-y-1">
                         {selectedAnomaly.affectedItems.developers.map((dev, index) => (
-                          <div key={index} className="text-sm bg-gray-700 text-gray-200 px-3 py-1 rounded border border-gray-600">
+                          <div 
+                            key={index} 
+                            className="text-sm px-3 py-1 rounded"
+                            style={{
+                              backgroundColor: isDark ? '#1a1a1a' : '#f5f5f5',
+                              color: isDark ? '#f5f5f5' : '#1a1a1a',
+                              border: `1px solid ${isDark ? 'rgba(140, 29, 64, 0.3)' : 'rgba(140, 29, 64, 0.2)'}`
+                            }}
+                          >
                             {dev}
                           </div>
                         ))}
@@ -546,10 +605,18 @@ export default function AnomalyDetector() {
                   )}
                   {selectedAnomaly.affectedItems.prs && (
                     <div>
-                      <h4 className="text-sm font-medium text-gray-300 mb-2">Pull Requests</h4>
+                      <h4 className="text-sm font-medium mb-2" style={{ color: isDark ? '#aaa' : '#666' }}>Pull Requests</h4>
                       <div className="space-y-1">
                         {selectedAnomaly.affectedItems.prs.map((pr, index) => (
-                          <div key={index} className="text-sm font-mono bg-gray-700 text-gray-200 px-3 py-1 rounded border border-gray-600">
+                          <div 
+                            key={index} 
+                            className="text-sm font-mono px-3 py-1 rounded"
+                            style={{
+                              backgroundColor: isDark ? '#1a1a1a' : '#f5f5f5',
+                              color: isDark ? '#f5f5f5' : '#1a1a1a',
+                              border: `1px solid ${isDark ? 'rgba(140, 29, 64, 0.3)' : 'rgba(140, 29, 64, 0.2)'}`
+                            }}
+                          >
                             {pr}
                           </div>
                         ))}
@@ -558,10 +625,18 @@ export default function AnomalyDetector() {
                   )}
                   {selectedAnomaly.affectedItems.commits && (
                     <div>
-                      <h4 className="text-sm font-medium text-gray-300 mb-2">Commits</h4>
+                      <h4 className="text-sm font-medium mb-2" style={{ color: isDark ? '#aaa' : '#666' }}>Commits</h4>
                       <div className="space-y-1">
                         {selectedAnomaly.affectedItems.commits.map((commit, index) => (
-                          <div key={index} className="text-sm font-mono bg-gray-700 text-gray-200 px-3 py-1 rounded border border-gray-600">
+                          <div 
+                            key={index} 
+                            className="text-sm font-mono px-3 py-1 rounded"
+                            style={{
+                              backgroundColor: isDark ? '#1a1a1a' : '#f5f5f5',
+                              color: isDark ? '#f5f5f5' : '#1a1a1a',
+                              border: `1px solid ${isDark ? 'rgba(140, 29, 64, 0.3)' : 'rgba(140, 29, 64, 0.2)'}`
+                            }}
+                          >
                             {commit}
                           </div>
                         ))}

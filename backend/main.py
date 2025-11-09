@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routes import issues, stats, ai, dashboard, chat, srs
+from app.routes import issues, stats, dashboard, chat, srs
 from app.config import settings
 from app.middleware.error_handler import setup_error_handlers
 
@@ -25,7 +25,6 @@ app.add_middleware(
 # Include routers
 app.include_router(issues.router, prefix="/api", tags=["issues"])
 app.include_router(stats.router, prefix="/api", tags=["stats"])
-app.include_router(ai.router, prefix="/api/ai", tags=["ai"])
 app.include_router(dashboard.router, prefix="/api/dashboard", tags=["dashboard"])
 app.include_router(chat.router, prefix="/api", tags=["Chat"])
 app.include_router(srs.router, prefix="/api/srs", tags=["srs"])
