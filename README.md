@@ -25,7 +25,8 @@ An AI-powered project management tool that intelligently manages GitHub and Jira
 ├── frontend/          # Next.js frontend application
 ├── backend/           # FastAPI backend server
 └── mcp-servers/       # MCP server implementations
-    └── github-mcp/   # GitHub MCP server
+    ├── github-mcp/   # GitHub MCP server
+    └── jira-mcp/     # Jira MCP server
 ```
 
 ## Getting Started
@@ -66,7 +67,13 @@ Backend API will be available at `http://localhost:8000`
 
 ### MCP Servers
 
+#### GitHub MCP Server
+
 See `mcp-servers/github-mcp/README.md` for setup instructions.
+
+#### Jira MCP Server
+
+See `mcp-servers/jira-mcp/README.md` for setup instructions.
 
 ## Environment Variables
 
@@ -92,7 +99,7 @@ JIRA_API_TOKEN=your_jira_api_token
 
 1. Start backend: `cd backend && source venv/bin/activate && uvicorn main:app --reload`
 2. Start frontend: `cd frontend && npm run dev`
-3. MCP server: Configure in Cursor (see `mcp-servers/github-mcp/README.md`)
+3. MCP servers: Configure in Cursor (see `mcp-servers/github-mcp/README.md` and `mcp-servers/jira-mcp/README.md`)
 
 ### API Documentation
 
