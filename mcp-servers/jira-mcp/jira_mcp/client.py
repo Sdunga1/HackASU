@@ -108,6 +108,30 @@ class JiraClient:
         except requests.exceptions.RequestException as e:
             raise Exception(f"Request failed: {str(e)}")
     
+    def _put(self, endpoint: str, data: Optional[Dict] = None) -> Dict:
+        """Make PUT request to Jira API."""
+        self._ensure_auth()
+        url = f"{self.url}/rest/api/3{endpoint}"
+        try:
+            response = self.session.put(url, json=data, timeout=REQUEST_TIMEOUT_SECONDS)
+            if response.status_code in [200, 204]:
+                return response.json() if response.text else {"status": "success"}
+            return self._handle_api_response(response, endpoint)
+        except requests.exceptions.RequestException as e:
+            raise Exception(f"Request failed: {str(e)}")
+    
+    def _delete(self, endpoint: str) -> Dict:
+        """Make DELETE request to Jira API."""
+        self._ensure_auth()
+        url = f"{self.url}/rest/api/3{endpoint}"
+        try:
+            response = self.session.delete(url, timeout=REQUEST_TIMEOUT_SECONDS)
+            if response.status_code in [200, 204]:
+                return {"status": "success"}
+            return self._handle_api_response(response, endpoint)
+        except requests.exceptions.RequestException as e:
+            raise Exception(f"Request failed: {str(e)}")
+    
     # Project methods
     def list_projects(self, include_archived: bool = False) -> List[Dict]:
         """List all projects."""
@@ -185,4 +209,185 @@ class JiraClient:
             return self._handle_api_response(response, f"/board/{board_id}/sprint")
         except requests.exceptions.RequestException as e:
             raise Exception(f"Request failed: {str(e)}")
+    
+    # Write methods
+    def create_issue(self, project_key: str, summary: str, issue_type: str, description: Optional[str] = None, 
+                    assignee: Optional[str] = None, priority: Optional[str] = None, labels: Optional[List[str]] = None) -> Dict:
+        """Create a new Jira issue."""
+        data = {
+            "fields": {
+                "project": {"key": project_key},
+                "summary": summary,
+                "issuetype": {"name": issue_type},
+            }
+        }
+        
+        if description:
+            data["fields"]["description"] = {
+                "type": "doc",
+                "version": 1,
+                "content": [
+                    {
+                        "type": "paragraph",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": description
+                            }
+                        ]
+                    }
+                ]
+            }
+        
+        if assignee:
+            data["fields"]["assignee"] = {"accountId": assignee} if "@" not in assignee else {"name": assignee}
+        
+        if priority:
+            data["fields"]["priority"] = {"name": priority}
+        
+        if labels:
+            data["fields"]["labels"] = labels
+        
+        return self._post("/issue", data=data)
+    
+    def update_issue(self, issue_key: str, summary: Optional[str] = None, description: Optional[str] = None,
+                    assignee: Optional[str] = None, priority: Optional[str] = None, labels: Optional[List[str]] = None) -> Dict:
+        """Update an existing Jira issue."""
+        data = {"fields": {}}
+        
+        if summary:
+            data["fields"]["summary"] = summary
+        
+        if description:
+            data["fields"]["description"] = {
+                "type": "doc",
+                "version": 1,
+                "content": [
+                    {
+                        "type": "paragraph",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": description
+                            }
+                        ]
+                    }
+                ]
+            }
+        
+        if assignee:
+            data["fields"]["assignee"] = {"accountId": assignee} if "@" not in assignee else {"name": assignee}
+        
+        if priority:
+            data["fields"]["priority"] = {"name": priority}
+        
+        if labels:
+            data["fields"]["labels"] = labels
+        
+        return self._put(f"/issue/{issue_key}", data=data)
+    
+    def delete_issue(self, issue_key: str) -> Dict:
+        """Delete a Jira issue."""
+        return self._delete(f"/issue/{issue_key}")
+    
+    def add_comment(self, issue_key: str, comment_text: str) -> Dict:
+        """Add a comment to a Jira issue."""
+        data = {
+            "body": {
+                "type": "doc",
+                "version": 1,
+                "content": [
+                    {
+                        "type": "paragraph",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": comment_text
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+        return self._post(f"/issue/{issue_key}/comment", data=data)
+    
+    def transition_issue(self, issue_key: str, transition_id: str, comment: Optional[str] = None) -> Dict:
+        """Transition an issue to a new status."""
+        data = {
+            "transition": {"id": transition_id}
+        }
+        
+        if comment:
+            data["update"] = {
+                "comment": [
+                    {
+                        "add": {
+                            "body": {
+                                "type": "doc",
+                                "version": 1,
+                                "content": [
+                                    {
+                                        "type": "paragraph",
+                                        "content": [
+                                            {
+                                                "type": "text",
+                                                "text": comment
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ]
+            }
+        
+        return self._post(f"/issue/{issue_key}/transitions", data=data)
+    
+    def get_transitions(self, issue_key: str) -> Dict:
+        """Get available transitions for an issue."""
+        return self._get(f"/issue/{issue_key}/transitions")
+    
+    def batch_create_issues(self, issues: List[Dict]) -> Dict:
+        """Create multiple issues in a single request."""
+        data = {"issueUpdates": []}
+        
+        for issue in issues:
+            issue_data = {
+                "fields": {
+                    "project": {"key": issue["project_key"]},
+                    "summary": issue["summary"],
+                    "issuetype": {"name": issue["issue_type"]},
+                }
+            }
+            
+            if issue.get("description"):
+                issue_data["fields"]["description"] = {
+                    "type": "doc",
+                    "version": 1,
+                    "content": [
+                        {
+                            "type": "paragraph",
+                            "content": [
+                                {
+                                    "type": "text",
+                                    "text": issue["description"]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            
+            if issue.get("assignee"):
+                issue_data["fields"]["assignee"] = {"accountId": issue["assignee"]} if "@" not in issue["assignee"] else {"name": issue["assignee"]}
+            
+            if issue.get("priority"):
+                issue_data["fields"]["priority"] = {"name": issue["priority"]}
+            
+            if issue.get("labels"):
+                issue_data["fields"]["labels"] = issue["labels"]
+            
+            data["issueUpdates"].append(issue_data)
+        
+        return self._post("/issue/bulk", data=data)
 
