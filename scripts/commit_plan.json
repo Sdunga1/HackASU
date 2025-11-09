@@ -1,0 +1,297 @@
+{
+  "tickets": {
+    "SCRUM-1": {
+      "strategy": "minimal",
+      "commits": [
+        {
+          "message": "Initial project setup",
+          "date": "2025-11-09 10:00:00",
+          "hasPR": false
+        }
+      ]
+    },
+    "SCRUM-2": {
+      "strategy": "normal_progress",
+      "commits": [
+        {
+          "message": "Initial implementation of user authentication",
+          "date": "2025-11-09 09:00:00",
+          "details": "Add login component structure\nConfigure authentication routes"
+        },
+        {
+          "message": "Implement OAuth integration",
+          "date": "2025-11-10 14:00:00",
+          "details": "Add OAuth provider configuration\nCreate token exchange handler"
+        },
+        {
+          "message": "Add session management",
+          "date": "2025-11-11 11:00:00",
+          "details": "Implement session storage\nAdd token refresh logic"
+        },
+        {
+          "message": "Fix authentication edge cases",
+          "date": "2025-11-12 16:00:00",
+          "details": "Handle token expiration\nAdd error handling for failed auth"
+        }
+      ],
+      "hasPR": true,
+      "prTitle": "SCRUM-2: User Authentication Implementation",
+      "prDescription": "Implements OAuth 2.0 authentication flow with session management",
+      "reviewComments": [
+        {
+          "author": "Code Reviewer",
+          "comment": "Consider adding rate limiting for login attempts",
+          "date": "2025-11-13 10:00:00"
+        }
+      ]
+    },
+    "SCRUM-3": {
+      "strategy": "rapid_completion",
+      "commits": [
+        {
+          "message": "Add database migration scripts",
+          "date": "2025-11-09 10:00:00",
+          "details": "Create user table migration\nAdd indexes for performance"
+        },
+        {
+          "message": "Update API endpoints for new schema",
+          "date": "2025-11-10 15:00:00",
+          "details": "Modify user endpoints\nAdd validation logic"
+        }
+      ],
+      "hasPR": true,
+      "prTitle": "SCRUM-3: Database Migration and API Updates"
+    },
+    "SCRUM-5": {
+      "strategy": "anomaly_no_pr",
+      "commits": [
+        {
+          "message": "Research Next.js 14 app directory structure",
+          "date": "2025-11-09 09:00:00",
+          "details": "Document routing patterns\nAnalyze performance implications"
+        },
+        {
+          "message": "Evaluate React Server Components",
+          "date": "2025-11-10 14:00:00",
+          "details": "Test RSC implementation\nBenchmark performance metrics"
+        },
+        {
+          "message": "Compare state management solutions",
+          "date": "2025-11-11 11:00:00",
+          "details": "Research Zustand vs Redux\nCreate comparison document"
+        },
+        {
+          "message": "Test deployment strategies",
+          "date": "2025-11-12 10:00:00",
+          "details": "Vercel deployment test\nDocker containerization test"
+        },
+        {
+          "message": "Finalize research recommendations",
+          "date": "2025-11-13 16:00:00",
+          "details": "Create architecture decision document\nDocument findings in README"
+        }
+      ],
+      "hasPR": false,
+      "anomaly": "Unlinked PR detected"
+    },
+    "SCRUM-6": {
+      "strategy": "security_review_delay",
+      "commits": [
+        {
+          "message": "Add password strength validation",
+          "date": "2025-11-09 09:00:00",
+          "details": "Implement password requirements\nAdd validation UI"
+        },
+        {
+          "message": "Implement multi-factor authentication setup",
+          "date": "2025-11-10 14:00:00",
+          "details": "Add MFA configuration\nCreate QR code generation"
+        },
+        {
+          "message": "Add MFA verification flow",
+          "date": "2025-11-11 11:00:00",
+          "details": "Implement TOTP verification\nAdd backup code generation"
+        },
+        {
+          "message": "Integrate MFA with login flow",
+          "date": "2025-11-12 10:00:00",
+          "details": "Update authentication service\nAdd MFA challenge step"
+        },
+        {
+          "message": "Add MFA recovery options",
+          "date": "2025-11-13 15:00:00",
+          "details": "Implement backup code flow\nAdd account recovery"
+        },
+        {
+          "message": "Add token encryption and secure storage",
+          "date": "2025-11-16 13:00:00",
+          "details": "Implemented AES-256 encryption for backup codes\nAddresses security review feedback"
+        }
+      ],
+      "hasPR": true,
+      "prTitle": "SCRUM-6: Multi-Factor Authentication Implementation",
+      "prDescription": "Adds MFA support with TOTP, backup codes, and recovery options",
+      "reviewComments": [
+        {
+          "author": "Security Team",
+          "comment": "🔒 Security Review: Need to encrypt backup codes at rest",
+          "date": "2025-11-14 10:15:00",
+          "type": "blocker"
+        },
+        {
+          "author": "Developer",
+          "comment": "Working on implementing AES-256 encryption for backup codes",
+          "date": "2025-11-15 15:30:00",
+          "type": "response"
+        },
+        {
+          "author": "Security Team",
+          "comment": "✅ Encryption implementation looks good. Ready to merge after tests pass",
+          "date": "2025-11-16 14:20:00",
+          "type": "approval"
+        }
+      ],
+      "estimatedDays": 5,
+      "actualDays": 8
+    },
+    "SCRUM-9": {
+      "strategy": "critical_bug",
+      "commits": [
+        {
+          "message": "Investigate data pipeline failures",
+          "date": "2025-11-09 09:00:00",
+          "details": "Add logging to pipeline stages\nDocument error patterns"
+        },
+        {
+          "message": "Identify root cause - memory leak in data processor",
+          "date": "2025-11-10 14:00:00",
+          "details": "Create reproduction test case\nDocument memory usage patterns"
+        },
+        {
+          "message": "Fix memory leak in data processor",
+          "date": "2025-11-11 11:00:00",
+          "details": "Implement proper resource cleanup\nAdd memory monitoring"
+        },
+        {
+          "message": "Add regression tests",
+          "date": "2025-11-12 10:00:00",
+          "details": "Test with large datasets\nVerify memory usage stays within limits"
+        },
+        {
+          "message": "Deploy hotfix to production",
+          "date": "2025-11-13 16:00:00",
+          "details": "Create hotfix branch\nDeploy with monitoring"
+        }
+      ],
+      "hasPR": true,
+      "prTitle": "SCRUM-9: Critical Fix - Data Pipeline Memory Leak",
+      "prDescription": "Fixes critical memory leak causing pipeline failures",
+      "reviewComments": [
+        {
+          "author": "DevOps",
+          "comment": "🚫 Urgent: Production issue, needs immediate attention",
+          "date": "2025-11-09 10:00:00",
+          "type": "urgent"
+        },
+        {
+          "author": "Tech Lead",
+          "comment": "✅ Approved for hotfix deployment",
+          "date": "2025-11-13 17:00:00",
+          "type": "approval"
+        }
+      ]
+    },
+    "SCRUM-13": {
+      "strategy": "rapid_completion_anomaly",
+      "commits": [
+        {
+          "message": "Quick refactor of API endpoints",
+          "date": "2025-11-09 09:00:00",
+          "details": "Update endpoint responses\nAdd error handling"
+        },
+        {
+          "message": "Update documentation",
+          "date": "2025-11-09 14:00:00",
+          "details": "Update API docs\nAdd examples"
+        },
+        {
+          "message": "Deploy changes",
+          "date": "2025-11-09 18:00:00",
+          "details": "Merge to main\nDeploy to staging"
+        }
+      ],
+      "hasPR": true,
+      "prTitle": "SCRUM-13: Rapid API Endpoint Refactoring",
+      "anomaly": "Rapid 1-Day Completion"
+    },
+    "SCRUM-15": {
+      "strategy": "high_commit_volume_anomaly",
+      "commits": [
+        {
+          "message": "Fix config loading issue",
+          "date": "2025-11-09 09:00:00"
+        },
+        {
+          "message": "Add config validation",
+          "date": "2025-11-09 09:30:00"
+        },
+        {
+          "message": "Fix validation error",
+          "date": "2025-11-09 10:00:00"
+        },
+        {
+          "message": "Update config schema",
+          "date": "2025-11-09 10:30:00"
+        },
+        {
+          "message": "Fix schema validation",
+          "date": "2025-11-09 11:00:00"
+        },
+        {
+          "message": "Add error handling",
+          "date": "2025-11-09 11:30:00"
+        },
+        {
+          "message": "Fix error handling bug",
+          "date": "2025-11-09 12:00:00"
+        },
+        {
+          "message": "Add logging",
+          "date": "2025-11-09 14:00:00"
+        },
+        {
+          "message": "Refactor config loader",
+          "date": "2025-11-10 09:00:00"
+        },
+        {
+          "message": "Fix refactor issue",
+          "date": "2025-11-10 10:00:00"
+        },
+        {
+          "message": "Add unit tests",
+          "date": "2025-11-10 11:00:00"
+        },
+        {
+          "message": "Fix test failures",
+          "date": "2025-11-10 14:00:00"
+        },
+        {
+          "message": "Update documentation",
+          "date": "2025-11-10 15:00:00"
+        },
+        {
+          "message": "Final bug fix",
+          "date": "2025-11-11 09:00:00"
+        },
+        {
+          "message": "Deploy fix",
+          "date": "2025-11-11 16:00:00"
+        }
+      ],
+      "hasPR": true,
+      "prTitle": "SCRUM-15: Fix Infrastructure Configuration Bug",
+      "anomaly": "High Commit Volume (15 commits)"
+    }
+  }
+}
+

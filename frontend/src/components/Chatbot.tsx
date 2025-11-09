@@ -2,7 +2,10 @@
 
 import { FormEvent, useState, ReactNode, useEffect, useRef } from "react";
 import clsx from "clsx";
+import { usePathname } from "next/navigation";
 import styles from "./Chatbot.module.css";
+import { scrapePageContent, createPageContextSummary } from "@/lib/pageScraper";
+import { storePageContext, getPageContext, hasContextChanged, createContextHistorySummary } from "@/lib/contextStorage";
 
 type Message = {
   id: string;
@@ -192,6 +195,7 @@ export function Chatbot({
   introMessage = DEFAULTS.introMessage,
   className
 }: ChatbotProps) {
+  const pathname = usePathname();
   const [messages, setMessages] = useState<Message[]>(() => [
     {
       id: crypto.randomUUID(),
@@ -201,7 +205,123 @@ export function Chatbot({
   ]);
   const [question, setQuestion] = useState("");
   const [isSubmitting, setSubmitting] = useState(false);
+  const [pageContext, setPageContext] = useState<string>("");
+  const [contextLoaded, setContextLoaded] = useState(false);
   const chatLogRef = useRef<HTMLDivElement>(null);
+  const hasScrapedRef = useRef(false);
+  const lastUrlRef = useRef<string>("");
+
+  // Scrape page content when component mounts, pathname changes, or page content changes
+  useEffect(() => {
+    const contentHashRef = { value: '' };
+    let scrapeTimeout: NodeJS.Timeout;
+    
+    const createContentHash = (): string => {
+      try {
+        const context = scrapePageContent();
+        const keyHeadings = document.querySelectorAll('h1, h2, h3');
+        const headingsText = Array.from(keyHeadings).slice(0, 5).map(h => h.textContent?.trim() || '').join('|');
+        const contentPreview = context.content.substring(0, 300);
+        return `${context.url}-${context.title}-${headingsText}-${contentPreview}`;
+      } catch {
+        return '';
+      }
+    };
+    
+    const scrapeAndStoreContext = () => {
+      try {
+        // Wait a bit for page to render
+        scrapeTimeout = setTimeout(() => {
+          const context = scrapePageContent();
+          const currentUrl = context.url;
+          
+          // Create a more robust hash of the page content to detect changes
+          const contentHashNew = createContentHash();
+          
+          // Check if URL or content has changed (new page or tab switch)
+          const urlChanged = currentUrl !== lastUrlRef.current;
+          const contentChanged = contentHashNew !== contentHashRef.value;
+          
+          // Always update on first load, URL change, or significant content change
+          if (urlChanged || contentChanged || !hasScrapedRef.current) {
+            storePageContext(context);
+            const summary = createPageContextSummary(context);
+            setPageContext(summary);
+            setContextLoaded(true);
+            hasScrapedRef.current = true;
+            lastUrlRef.current = currentUrl;
+            contentHashRef.value = contentHashNew;
+            
+            // Hide context loaded indicator after 3 seconds
+            setTimeout(() => setContextLoaded(false), 3000);
+            
+            console.log('Page context updated:', context.title, urlChanged ? '(URL changed)' : '(Content changed)');
+          }
+        }, 800); // Increased delay to allow tab content to render
+      } catch (error) {
+        console.error('Error scraping page context:', error);
+        setContextLoaded(false);
+      }
+    };
+
+    // Reset scrape flag when pathname changes
+    if (pathname) {
+      hasScrapedRef.current = false;
+      contentHashRef.value = ''; // Reset content hash on route change
+    }
+    
+    // Initial scrape
+    scrapeAndStoreContext();
+    
+    // Monitor for changes more frequently (for tab switches and content updates)
+    const checkInterval = setInterval(() => {
+      if (typeof window !== 'undefined') {
+        try {
+          const currentUrl = window.location.href;
+          const contentHashNew = createContentHash();
+          
+          // Check if content changed (tab switch, dynamic content update, etc.)
+          if (contentHashNew !== contentHashRef.value || currentUrl !== lastUrlRef.current) {
+            hasScrapedRef.current = false;
+            contentHashRef.value = ''; // Reset to force update
+            scrapeAndStoreContext();
+          }
+        } catch (error) {
+          // Silently handle errors during monitoring
+        }
+      }
+    }, 1500); // Check every 1.5 seconds for content changes (faster detection)
+    
+    // Also listen for DOM mutations to detect tab changes immediately
+    let observer: MutationObserver | null = null;
+    if (typeof window !== 'undefined' && typeof MutationObserver !== 'undefined') {
+      observer = new MutationObserver(() => {
+        // Debounce: only scrape after mutations stop for 500ms
+        if (scrapeTimeout) clearTimeout(scrapeTimeout);
+        scrapeTimeout = setTimeout(() => {
+          hasScrapedRef.current = false;
+          scrapeAndStoreContext();
+        }, 500);
+      });
+      
+      // Observe changes to the main content area
+      const mainContent = document.querySelector('main') || document.body;
+      if (mainContent) {
+        observer.observe(mainContent, {
+          childList: true,
+          subtree: true,
+          attributes: false,
+          characterData: false
+        });
+      }
+    }
+    
+    return () => {
+      if (scrapeTimeout) clearTimeout(scrapeTimeout);
+      if (checkInterval) clearInterval(checkInterval);
+      if (observer) observer.disconnect();
+    };
+  }, [pathname]);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -234,10 +354,34 @@ export function Chatbot({
     }, 0);
 
     try {
+      // Get current page context
+      const currentContext = getPageContext();
+      const contextSummary = currentContext 
+        ? createPageContextSummary(currentContext)
+        : '';
+      const contextHistory = createContextHistorySummary();
+      
+      // Prepare request with context
+      const requestBody: {
+        question: string;
+        pageContext?: string;
+        contextHistory?: string;
+      } = {
+        question: trimmed,
+      };
+      
+      if (contextSummary) {
+        requestBody.pageContext = contextSummary;
+      }
+      
+      if (contextHistory) {
+        requestBody.contextHistory = contextHistory;
+      }
+
       const response = await fetch(apiUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: trimmed })
+        body: JSON.stringify(requestBody)
       });
 
       if (!response.ok) {
@@ -304,6 +448,16 @@ export function Chatbot({
             <div className={styles.headerMeta}>
               <span className={styles.statusDot}></span>
               <span>Active now</span>
+              {contextLoaded && (
+                <span style={{ 
+                  marginLeft: '8px', 
+                  fontSize: '11px', 
+                  color: '#4ade80',
+                  opacity: 0.8 
+                }}>
+                  • Context loaded
+                </span>
+              )}
             </div>
           </div>
         </div>
