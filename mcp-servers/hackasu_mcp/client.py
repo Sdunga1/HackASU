@@ -1,5 +1,6 @@
 import json
 import os
+import time
 import base64
 from typing import Dict, List, Optional
 from loguru import logger
@@ -9,14 +10,249 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
+# GitHub API configuration
+GITHUB_API_BASE = "https://api.github.com"
+GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
+REQUEST_TIMEOUT_SECONDS = 30
+
+logger.info("HackASU MCP Server - GitHub Client initialized")
+
+
+class GitHubClient:
+    def __init__(self, token: Optional[str] = None):
+        self.token = token or GITHUB_TOKEN
+        self.session = requests.Session()
+        if self.token:
+            self.session.headers.update({
+                "Authorization": f"token {self.token}",
+                "Accept": "application/vnd.github.v3+json",
+            })
+        else:
+            logger.warning("No GitHub token provided. Some operations may be rate-limited.")
+    
+    def _ensure_token(self):
+        """Ensure token is available for authenticated requests."""
+        if not self.token:
+            raise Exception(
+                "GitHub token required. Set GITHUB_TOKEN environment variable or pass token to client."
+            )
+    
+    def _handle_api_response(self, response: requests.Response, operation_name: str) -> Dict:
+        """Handle API response and provide meaningful error messages."""
+        if response.status_code == 200:
+            return response.json()
+        
+        if response.status_code == 401:
+            raise Exception(
+                f"Authentication failed: Invalid or expired token.\n"
+                f"Set GITHUB_TOKEN environment variable with a valid GitHub Personal Access Token."
+            )
+        elif response.status_code == 403:
+            # Check if it's rate limiting
+            if "rate limit" in response.text.lower():
+                raise Exception(
+                    f"Rate limit exceeded. Please wait before making more requests.\n"
+                    f"Unauthenticated requests: 60/hour\n"
+                    f"Authenticated requests: 5,000/hour"
+                )
+            raise Exception(
+                f"Access denied: You don't have permission to {operation_name}.\n"
+                f"Check repository permissions and token scopes."
+            )
+        elif response.status_code == 404:
+            raise Exception(
+                f"Resource not found: {operation_name} failed.\n"
+                f"Check repository owner, name, and resource ID."
+            )
+        else:
+            raise Exception(
+                f"API error {response.status_code}: {response.text}"
+            )
+    
+    def _get(self, endpoint: str, params: Optional[Dict] = None) -> Dict:
+        """Make GET request to GitHub API."""
+        url = f"{GITHUB_API_BASE}{endpoint}"
+        try:
+            response = self.session.get(url, params=params, timeout=REQUEST_TIMEOUT_SECONDS)
+            return self._handle_api_response(response, endpoint)
+        except requests.exceptions.RequestException as e:
+            raise Exception(f"Request failed: {str(e)}")
+    
+    def _post(self, endpoint: str, data: Optional[Dict] = None) -> Dict:
+        """Make POST request to GitHub API."""
+        url = f"{GITHUB_API_BASE}{endpoint}"
+        try:
+            response = self.session.post(url, json=data, timeout=REQUEST_TIMEOUT_SECONDS)
+            return self._handle_api_response(response, endpoint)
+        except requests.exceptions.RequestException as e:
+            raise Exception(f"Request failed: {str(e)}")
+    
+    # Repository methods
+    def list_commits(
+        self,
+        owner: str,
+        repo: str,
+        sha: Optional[str] = None,
+        since: Optional[str] = None,
+        until: Optional[str] = None,
+        author: Optional[str] = None,
+        page: int = 1,
+        per_page: int = 30
+    ) -> List[Dict]:
+        """List commits from a repository."""
+        endpoint = f"/repos/{owner}/{repo}/commits"
+        params = {
+            "page": page,
+            "per_page": min(per_page, 100),  # GitHub max is 100
+        }
+        if sha:
+            params["sha"] = sha
+        if since:
+            params["since"] = since
+        if until:
+            params["until"] = until
+        if author:
+            params["author"] = author
+        
+        return self._get(endpoint, params)
+    
+    def get_commit(self, owner: str, repo: str, sha: str) -> Dict:
+        """Get a specific commit."""
+        endpoint = f"/repos/{owner}/{repo}/commits/{sha}"
+        return self._get(endpoint)
+    
+    def list_pull_requests(
+        self,
+        owner: str,
+        repo: str,
+        state: str = "open",
+        head: Optional[str] = None,
+        base: Optional[str] = None,
+        sort: str = "created",
+        direction: str = "desc",
+        page: int = 1,
+        per_page: int = 30
+    ) -> List[Dict]:
+        """List pull requests."""
+        endpoint = f"/repos/{owner}/{repo}/pulls"
+        params = {
+            "state": state,
+            "sort": sort,
+            "direction": direction,
+            "page": page,
+            "per_page": min(per_page, 100),
+        }
+        if head:
+            params["head"] = head
+        if base:
+            params["base"] = base
+        
+        return self._get(endpoint, params)
+    
+    def get_pull_request(self, owner: str, repo: str, pr_number: int) -> Dict:
+        """Get a specific pull request."""
+        endpoint = f"/repos/{owner}/{repo}/pulls/{pr_number}"
+        return self._get(endpoint)
+    
+    def list_pull_request_reviews(
+        self,
+        owner: str,
+        repo: str,
+        pr_number: int
+    ) -> List[Dict]:
+        """List reviews for a pull request."""
+        endpoint = f"/repos/{owner}/{repo}/pulls/{pr_number}/reviews"
+        return self._get(endpoint)
+    
+    def list_pull_request_comments(
+        self,
+        owner: str,
+        repo: str,
+        pr_number: int
+    ) -> List[Dict]:
+        """List review comments for a pull request."""
+        endpoint = f"/repos/{owner}/{repo}/pulls/{pr_number}/comments"
+        return self._get(endpoint)
+    
+    def list_issues(
+        self,
+        owner: str,
+        repo: str,
+        state: str = "open",
+        labels: Optional[str] = None,
+        assignee: Optional[str] = None,
+        creator: Optional[str] = None,
+        since: Optional[str] = None,
+        page: int = 1,
+        per_page: int = 30
+    ) -> List[Dict]:
+        """List issues."""
+        endpoint = f"/repos/{owner}/{repo}/issues"
+        params = {
+            "state": state,
+            "page": page,
+            "per_page": min(per_page, 100),
+        }
+        if labels:
+            params["labels"] = labels
+        if assignee:
+            params["assignee"] = assignee
+        if creator:
+            params["creator"] = creator
+        if since:
+            params["since"] = since
+        
+        return self._get(endpoint, params)
+    
+    def get_issue(self, owner: str, repo: str, issue_number: int) -> Dict:
+        """Get a specific issue."""
+        endpoint = f"/repos/{owner}/{repo}/issues/{issue_number}"
+        return self._get(endpoint)
+    
+    def search_code(
+        self,
+        query: str,
+        sort: Optional[str] = None,
+        order: str = "desc",
+        page: int = 1,
+        per_page: int = 30
+    ) -> Dict:
+        """Search code."""
+        endpoint = "/search/code"
+        params = {
+            "q": query,
+            "order": order,
+            "page": page,
+            "per_page": min(per_page, 100),
+        }
+        if sort:
+            params["sort"] = sort
+        
+        return self._get(endpoint, params)
+    
+    def get_file_contents(
+        self,
+        owner: str,
+        repo: str,
+        path: str,
+        ref: Optional[str] = None
+    ) -> Dict:
+        """Get file contents."""
+        endpoint = f"/repos/{owner}/{repo}/contents/{path}"
+        params = {}
+        if ref:
+            params["ref"] = ref
+        
+        return self._get(endpoint, params)
+
+
 # Jira API configuration
 JIRA_URL = os.getenv("JIRA_URL", "").rstrip("/")
 JIRA_EMAIL = os.getenv("JIRA_EMAIL") or os.getenv("JIRA_USERNAME")
 JIRA_API_TOKEN = os.getenv("JIRA_API_TOKEN")
 JIRA_PERSONAL_TOKEN = os.getenv("JIRA_PERSONAL_TOKEN")
-REQUEST_TIMEOUT_SECONDS = 30
 
-logger.info("Jira MCP Server - Client initialized")
+logger.info("HackASU MCP Server - Jira Client initialized")
 
 
 class JiraClient:
@@ -170,20 +406,18 @@ class JiraClient:
     
     def search_issues(self, jql: str, start_at: int = 0, max_results: int = 50, fields: Optional[List[str]] = None, expand: Optional[str] = None) -> Dict:
         """Search issues using JQL."""
-        # Jira API v3 search endpoint requires POST for complex queries
         data = {
             "jql": jql,
             "startAt": start_at,
-            "maxResults": min(max_results, 100),  # Cap at 100 as per API limits
+            "maxResults": min(max_results, 100),
         }
         if fields:
-            # Convert fields list to array format expected by API
             data["fields"] = fields if isinstance(fields, list) else [fields]
         if expand:
             data["expand"] = expand
         return self._post("/search", data=data)
     
-    # Agile/Board methods (for sprints)
+    # Agile/Board methods
     def get_boards(self, project_key: Optional[str] = None, board_type: Optional[str] = None) -> Dict:
         """Get agile boards."""
         self._ensure_auth()
@@ -209,6 +443,106 @@ class JiraClient:
         try:
             response = self.session.get(url, params=params, timeout=REQUEST_TIMEOUT_SECONDS)
             return self._handle_api_response(response, f"/board/{board_id}/sprint")
+        except requests.exceptions.RequestException as e:
+            raise Exception(f"Request failed: {str(e)}")
+    
+    def create_sprint(self, board_id: int, name: str, start_date: str, end_date: str, goal: Optional[str] = None) -> Dict:
+        """Create a new sprint in Jira.
+        
+        Args:
+            board_id: Board ID
+            name: Sprint name
+            start_date: Start date in ISO format (e.g., "2024-01-01T00:00:00.000Z")
+            end_date: End date in ISO format (e.g., "2024-01-14T23:59:59.999Z")
+            goal: Optional sprint goal
+            
+        Returns:
+            Created sprint details
+        """
+        self._ensure_auth()
+        url = f"{self.url}/rest/agile/1.0/sprint"
+        data = {
+            "name": name,
+            "boardId": board_id,
+            "startDate": start_date,
+            "endDate": end_date
+        }
+        if goal:
+            data["goal"] = goal
+        
+        try:
+            response = self.session.post(url, json=data, timeout=REQUEST_TIMEOUT_SECONDS)
+            return self._handle_api_response(response, "/sprint")
+        except requests.exceptions.RequestException as e:
+            raise Exception(f"Request failed: {str(e)}")
+    
+    def update_sprint(self, sprint_id: int, name: Optional[str] = None, state: Optional[str] = None,
+                     start_date: Optional[str] = None, end_date: Optional[str] = None, goal: Optional[str] = None) -> Dict:
+        """Update an existing sprint in Jira.
+        
+        Args:
+            sprint_id: Sprint ID
+            name: New sprint name (optional)
+            state: New state - "future", "active", or "closed" (optional)
+            start_date: New start date in ISO format (optional)
+            end_date: New end date in ISO format (optional)
+            goal: New sprint goal (optional)
+            
+        Returns:
+            Updated sprint details
+        """
+        self._ensure_auth()
+        url = f"{self.url}/rest/agile/1.0/sprint/{sprint_id}"
+        data = {}
+        if name:
+            data["name"] = name
+        if state:
+            if state not in ["future", "active", "closed"]:
+                raise ValueError("State must be one of: future, active, closed")
+            data["state"] = state
+        if start_date:
+            data["startDate"] = start_date
+        if end_date:
+            data["endDate"] = end_date
+        if goal:
+            data["goal"] = goal
+        
+        if not data:
+            raise ValueError("At least one field must be provided for update")
+        
+        try:
+            response = self.session.put(url, json=data, timeout=REQUEST_TIMEOUT_SECONDS)
+            return self._handle_api_response(response, f"/sprint/{sprint_id}")
+        except requests.exceptions.RequestException as e:
+            raise Exception(f"Request failed: {str(e)}")
+    
+    def move_issue_to_sprint(self, issue_key: str, sprint_id: int) -> Dict:
+        """Move an issue to a sprint.
+        
+        Args:
+            issue_key: Issue key (e.g., 'PROJ-123')
+            sprint_id: Sprint ID
+            
+        Returns:
+            Success response
+        """
+        self._ensure_auth()
+        # Use Agile API to move issue to sprint
+        url = f"{self.url}/rest/agile/1.0/sprint/{sprint_id}/issue"
+        data = {
+            "issues": [issue_key]
+        }
+        
+        try:
+            response = self.session.post(url, json=data, timeout=REQUEST_TIMEOUT_SECONDS)
+            if response.status_code in [200, 204]:
+                return {"status": "success", "message": f"Issue {issue_key} moved to sprint {sprint_id}"}
+            # If not 200/204, try to get error message
+            try:
+                error_data = response.json()
+                raise Exception(f"Failed to move issue: {error_data}")
+            except:
+                raise Exception(f"Failed to move issue: HTTP {response.status_code}")
         except requests.exceptions.RequestException as e:
             raise Exception(f"Request failed: {str(e)}")
     
