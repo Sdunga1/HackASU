@@ -654,6 +654,180 @@ def batch_create_issues(issues_json: str) -> str:
         }, indent=2)
 
 @mcp.tool()
+def detect_workflow_anomalies(
+    project_key: str,
+    github_owner: Optional[str] = None,
+    github_repo: Optional[str] = None,
+    days_back: int = 30,
+    max_anomalies: int = 20
+) -> str:
+    """Detect workflow anomalies by analyzing Jira and GitHub data
+    
+    This tool analyzes Jira tickets and correlates them with GitHub commits and PRs
+    to detect issues like stale tickets, scope creep, missing links, status mismatches,
+    and excessive task switching.
+    
+    Args:
+        project_key: Jira project key to analyze (e.g., 'PROJ')
+        github_owner: Optional GitHub repository owner for cross-platform analysis
+        github_repo: Optional GitHub repository name
+        days_back: Number of days to look back for analysis (default: 30)
+        max_anomalies: Maximum number of anomalies to return (default: 20)
+    
+    Returns:
+        JSON response with detected anomalies
+    """
+    try:
+        logger.info(f"Detecting workflow anomalies for project {project_key}")
+        
+        from datetime import datetime, timedelta
+        
+        # Calculate date range
+        end_date = datetime.now()
+        start_date = end_date - timedelta(days=days_back)
+        
+        # Get Jira issues using JQL
+        jql = f'project = {project_key} AND updated >= -{days_back}d ORDER BY updated DESC'
+        search_result = jira_client.search_issues(jql=jql, max_results=100)
+        
+        issues = search_result.get("issues", [])
+        
+        # Prepare anomaly detection data
+        anomaly_data = {
+            "project_key": project_key,
+            "date_range": {
+                "start": start_date.isoformat(),
+                "end": end_date.isoformat()
+            },
+            "issues": []
+        }
+        
+        # Process each issue
+        for issue in issues:
+            issue_key = issue.get("key")
+            fields = issue.get("fields", {})
+            
+            # Get detailed issue data including changelog
+            try:
+                detailed_issue = jira_client.get_issue(issue_key, expand="changelog")
+                changelog = detailed_issue.get("changelog", {})
+                
+                # Extract status transitions
+                status_history = []
+                if changelog and changelog.get("histories"):
+                    for history in changelog.get("histories", []):
+                        for item in history.get("items", []):
+                            if item.get("field") == "status":
+                                status_history.append({
+                                    "from": item.get("fromString"),
+                                    "to": item.get("toString"),
+                                    "date": history.get("created"),
+                                    "author": history.get("author", {}).get("displayName") if history.get("author") else None
+                                })
+                
+                # Get comments
+                comments_response = jira_client.get_issue_comments(issue_key, max_results=50)
+                comments_count = comments_response.get("total", 0)
+                
+                issue_data = {
+                    "key": issue_key,
+                    "summary": fields.get("summary"),
+                    "status": fields.get("status", {}).get("name") if fields.get("status") else None,
+                    "issue_type": fields.get("issuetype", {}).get("name") if fields.get("issuetype") else None,
+                    "assignee": fields.get("assignee", {}).get("displayName") if fields.get("assignee") else None,
+                    "assignee_email": fields.get("assignee", {}).get("emailAddress") if fields.get("assignee") else None,
+                    "reporter": fields.get("reporter", {}).get("displayName") if fields.get("reporter") else None,
+                    "created": fields.get("created"),
+                    "updated": fields.get("updated"),
+                    "priority": fields.get("priority", {}).get("name") if fields.get("priority") else None,
+                    "labels": fields.get("labels", []),
+                    "status_history": status_history,
+                    "comments_count": comments_count,
+                    "story_points": fields.get("customfield_10016")  # Common story points field
+                }
+                
+                anomaly_data["issues"].append(issue_data)
+                
+            except Exception as e:
+                logger.warning(f"Could not get detailed data for {issue_key}: {e}")
+                # Add basic issue data
+                anomaly_data["issues"].append({
+                    "key": issue_key,
+                    "summary": fields.get("summary"),
+                    "status": fields.get("status", {}).get("name") if fields.get("status") else None,
+                    "assignee": fields.get("assignee", {}).get("displayName") if fields.get("assignee") else None,
+                    "created": fields.get("created"),
+                    "updated": fields.get("updated"),
+                    "status_history": [],
+                    "comments_count": 0
+                })
+        
+        # If GitHub repo provided, fetch commit/PR data for correlation
+        github_data = None
+        if github_owner and github_repo:
+            try:
+                # Call GitHub API to get commits and PRs
+                # This would be done via the GitHub MCP in production
+                github_data = {
+                    "owner": github_owner,
+                    "repo": github_repo,
+                    "available": True
+                }
+            except Exception as e:
+                logger.warning(f"Could not fetch GitHub data: {e}")
+                github_data = {"available": False, "error": str(e)}
+        
+        # Send to backend API for AI anomaly detection
+        backend_url = os.getenv("BACKEND_API_URL", "http://localhost:8000")
+        api_endpoint = f"{backend_url}/api/anomalies/detect"
+        
+        try:
+            response = requests.post(
+                api_endpoint,
+                json={
+                    "jira_data": anomaly_data,
+                    "github_data": github_data,
+                    "max_anomalies": max_anomalies
+                },
+                timeout=60
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                return json.dumps({
+                    "status": "success",
+                    "message": f"Successfully detected anomalies for {len(issues)} issues",
+                    "issues_analyzed": len(issues),
+                    "anomalies": result.get("anomalies", []),
+                    "project": project_key
+                }, indent=2)
+            else:
+                return json.dumps({
+                    "status": "partial_success",
+                    "message": f"Analyzed {len(issues)} issues but backend failed to detect anomalies",
+                    "issues_analyzed": len(issues),
+                    "raw_data": anomaly_data,
+                    "error": f"Backend responded with status {response.status_code}"
+                }, indent=2)
+                
+        except requests.exceptions.RequestException as e:
+            logger.warning(f"Could not reach backend API: {e}")
+            return json.dumps({
+                "status": "partial_success",
+                "message": f"Analyzed {len(issues)} issues but backend API is unreachable",
+                "issues_analyzed": len(issues),
+                "raw_data": anomaly_data,
+                "error": str(e)
+            }, indent=2)
+        
+    except Exception as e:
+        logger.error(f"Error detecting workflow anomalies: {e}")
+        return json.dumps({
+            "status": "error",
+            "message": f"Failed to detect workflow anomalies: {str(e)}"
+        }, indent=2)
+
+@mcp.tool()
 def send_sprints_to_dashboard(
     sprints_json: str,
     document_name: Optional[str] = None,

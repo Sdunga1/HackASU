@@ -208,6 +208,22 @@ class GitHubClient:
         endpoint = f"/repos/{owner}/{repo}/issues/{issue_number}"
         return self._get(endpoint)
     
+    def list_issue_comments(
+        self,
+        owner: str,
+        repo: str,
+        issue_number: int,
+        page: int = 1,
+        per_page: int = 30
+    ) -> List[Dict]:
+        """List comments for an issue."""
+        endpoint = f"/repos/{owner}/{repo}/issues/{issue_number}/comments"
+        params = {
+            "page": page,
+            "per_page": min(per_page, 100),
+        }
+        return self._get(endpoint, params)
+    
     def search_code(
         self,
         query: str,
