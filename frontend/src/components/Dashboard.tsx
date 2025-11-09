@@ -7,6 +7,7 @@ import ProjectStats from './ProjectStats'
 import CommitNarrative from './CommitNarrative'
 import AnomalyDetector from './AnomalyDetector'
 import { fetchIssues, fetchProjectStats } from '@/lib/api'
+import { useTheme } from '@/contexts/ThemeContext'
 
 interface Issue {
   id: string
@@ -27,6 +28,8 @@ interface ProjectStats {
 type TabType = 'overview' | 'narratives' | 'anomalies'
 
 export default function Dashboard() {
+  const { theme } = useTheme()
+  const isDark = theme === 'dark'
   const [activeTab, setActiveTab] = useState<TabType>('overview')
   const [issues, setIssues] = useState<Issue[]>([])
   const [stats, setStats] = useState<ProjectStats | null>(null)
@@ -78,10 +81,10 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-900">
+      <div className="flex items-center justify-center min-h-screen" style={{ backgroundColor: isDark ? '#0a0a0a' : '#f5f5f5' }}>
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-4 text-gray-400">Loading dashboard...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto" style={{ borderColor: '#FFC627' }}></div>
+          <p className="mt-4" style={{ color: isDark ? '#aaa' : '#666' }}>Loading dashboard...</p>
         </div>
       </div>
     )
@@ -89,9 +92,9 @@ export default function Dashboard() {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-900">
+      <div className="flex items-center justify-center min-h-screen" style={{ backgroundColor: isDark ? '#0a0a0a' : '#f5f5f5' }}>
         <div className="text-center">
-          <p className="text-red-400 mb-4">{error}</p>
+          <p className="mb-4" style={{ color: '#FFC627' }}>{error}</p>
           <button onClick={loadDashboardData} className="btn-primary">
             Retry
           </button>
@@ -119,21 +122,38 @@ export default function Dashboard() {
   ]
 
   return (
-    <div className="min-h-screen bg-gray-900">
+    <div className="min-h-screen" style={{ backgroundColor: isDark ? '#0a0a0a' : '#f5f5f5', transition: 'background-color 0.3s ease' }}>
       <Header />
       
-      <div className="border-b border-gray-700 bg-gray-800">
+      <div style={{ 
+        borderBottom: '1px solid rgba(140, 29, 64, 0.3)',
+        backgroundColor: isDark ? '#1a1a1a' : '#ffffff',
+        transition: 'background-color 0.3s ease'
+      }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <nav className="flex space-x-8">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                className="flex items-center gap-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors"
+                style={
                   activeTab === tab.id
-                    ? 'border-blue-500 text-blue-400'
-                    : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-600'
-                }`}
+                    ? { borderColor: '#FFC627', color: '#FFC627' }
+                    : { borderColor: 'transparent', color: isDark ? '#888' : '#666' }
+                }
+                onMouseEnter={(e) => {
+                  if (activeTab !== tab.id) {
+                    e.currentTarget.style.color = '#FFC627';
+                    e.currentTarget.style.borderColor = 'rgba(255, 198, 39, 0.3)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (activeTab !== tab.id) {
+                    e.currentTarget.style.color = isDark ? '#888' : '#666';
+                    e.currentTarget.style.borderColor = 'transparent';
+                  }
+                }}
               >
                 {tab.icon}
                 {tab.name}
@@ -150,7 +170,7 @@ export default function Dashboard() {
             
             <div className="mt-8">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-100">Issues</h2>
+                <h2 className="text-2xl font-bold" style={{ color: isDark ? '#f5f5f5' : '#1a1a1a' }}>Issues</h2>
                 <button onClick={loadDashboardData} className="btn-secondary">
                   Refresh
                 </button>
@@ -158,7 +178,7 @@ export default function Dashboard() {
               
               {issues.length === 0 ? (
                 <div className="card text-center py-12">
-                  <p className="text-gray-400">No issues found. Connect your repositories to get started.</p>
+                  <p style={{ color: isDark ? '#aaa' : '#666' }}>No issues found. Connect your repositories to get started.</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
