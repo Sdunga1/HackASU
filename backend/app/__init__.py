@@ -1,2 +1,0 @@
-# DevAI Manager Backend
-
