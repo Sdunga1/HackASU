@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routes import issues, stats, ai
+from app.routes import issues, stats, ai, dashboard
 from app.config import settings
 
 app = FastAPI(
@@ -22,6 +22,7 @@ app.add_middleware(
 app.include_router(issues.router, prefix="/api", tags=["issues"])
 app.include_router(stats.router, prefix="/api", tags=["stats"])
 app.include_router(ai.router, prefix="/api/ai", tags=["ai"])
+app.include_router(dashboard.router, prefix="/api/dashboard", tags=["dashboard"])
 
 @app.get("/")
 async def root():

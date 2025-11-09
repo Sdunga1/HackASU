@@ -1,8 +1,10 @@
 import json
+import os
 from typing import Optional
 from loguru import logger
 from mcp.server.fastmcp import FastMCP
 from .client import GitHubClient
+import requests
 
 # Create an MCP server
 mcp = FastMCP("GitHub-MCP-Server")
@@ -296,6 +298,83 @@ def get_issue(owner: str, repo: str, issue_number: int) -> str:
         return json.dumps({
             "status": "error",
             "message": f"Failed to get issue: {str(e)}"
+        }, indent=2)
+
+@mcp.tool()
+def send_issues_to_dashboard(owner: str, repo: str, state: str = "open") -> str:
+    """Fetch issues from GitHub and send them to the frontend dashboard via backend API"""
+    try:
+        logger.info(f"Fetching issues for {owner}/{repo} to send to dashboard")
+        
+        # Get issues using existing client
+        issues = github_client.list_issues(
+            owner=owner,
+            repo=repo,
+            state=state
+        )
+        
+        # Format issues for dashboard
+        formatted_issues = []
+        for issue in issues:
+            if issue.get("pull_request"):
+                continue
+            
+            formatted_issues.append({
+                "id": str(issue.get("number")),
+                "title": issue.get("title"),
+                "status": issue.get("state"),
+                "assignee": issue.get("assignees")[0].get("login") if issue.get("assignees") else None,
+                "priority": "medium",  # Default priority
+                "createdAt": issue.get("created_at"),
+                "labels": [l.get("name") for l in issue.get("labels", [])],
+                "url": issue.get("html_url"),
+            })
+        
+        # Send to backend API
+        backend_url = os.getenv("BACKEND_API_URL", "http://localhost:8000")
+        api_endpoint = f"{backend_url}/api/dashboard/sync-issues"
+        
+        try:
+            response = requests.post(
+                api_endpoint,
+                json={
+                    "repository": f"{owner}/{repo}",
+                    "issues": formatted_issues,
+                    "timestamp": None  # Backend will add timestamp
+                },
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                return json.dumps({
+                    "status": "success",
+                    "message": f"Successfully sent {len(formatted_issues)} issues to dashboard",
+                    "count": len(formatted_issues),
+                    "repository": f"{owner}/{repo}",
+                    "dashboard_response": response.json()
+                }, indent=2)
+            else:
+                return json.dumps({
+                    "status": "partial_success",
+                    "message": f"Fetched {len(formatted_issues)} issues but failed to send to dashboard",
+                    "issues": formatted_issues,
+                    "error": f"Backend responded with status {response.status_code}"
+                }, indent=2)
+                
+        except requests.exceptions.RequestException as e:
+            logger.warning(f"Could not reach backend API: {e}")
+            return json.dumps({
+                "status": "partial_success",
+                "message": f"Fetched {len(formatted_issues)} issues but backend API is unreachable",
+                "issues": formatted_issues,
+                "error": str(e)
+            }, indent=2)
+        
+    except Exception as e:
+        logger.error(f"Error in send_issues_to_dashboard: {e}")
+        return json.dumps({
+            "status": "error",
+            "message": f"Failed to fetch/send issues: {str(e)}"
         }, indent=2)
 
 def run():
