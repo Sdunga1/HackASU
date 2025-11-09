@@ -4,11 +4,11 @@ An AI-powered project management tool that intelligently manages GitHub and Jira
 
 ## Features
 
-- 🤖 AI-powered issue assignment using Claude API
-- 📊 Interactive dashboard for project visualization
-- 🔗 GitHub and Jira integration via MCP
-- 📈 Real-time project health monitoring
-- 🎯 Intelligent dependency tracking
+- AI-powered issue assignment using Claude API
+- Interactive dashboard for project visualization
+- GitHub and Jira integration via MCP
+- Real-time project health monitoring
+- Intelligent dependency tracking
 
 ## Tech Stack
 
@@ -24,10 +24,8 @@ An AI-powered project management tool that intelligently manages GitHub and Jira
 .
 ├── frontend/          # Next.js frontend application
 ├── backend/           # FastAPI backend server
-├── mcp-servers/       # MCP server implementations
-│   ├── github-mcp/   # GitHub MCP server
-│   └── jira-mcp/     # Jira MCP server
-└── docs/             # Documentation
+└── mcp-servers/       # MCP server implementations
+    └── github-mcp/   # GitHub MCP server
 ```
 
 ## Getting Started
@@ -68,16 +66,18 @@ Backend API will be available at `http://localhost:8000`
 
 ### MCP Servers
 
-MCP servers are currently in development. Setup instructions will be added soon.
+See `mcp-servers/github-mcp/README.md` for setup instructions.
 
 ## Environment Variables
 
 ### Frontend (.env.local)
+
 ```
 NEXT_PUBLIC_API_URL=http://localhost:8000
 ```
 
 ### Backend (.env)
+
 ```
 CLAUDE_API_KEY=your_claude_api_key
 GITHUB_TOKEN=your_github_token
@@ -90,8 +90,9 @@ JIRA_API_TOKEN=your_jira_api_token
 
 ### Running the full stack
 
-1. Start backend: `cd backend && uvicorn main:app --reload`
+1. Start backend: `cd backend && source venv/bin/activate && uvicorn main:app --reload`
 2. Start frontend: `cd frontend && npm run dev`
+3. MCP server: Configure in Cursor (see `mcp-servers/github-mcp/README.md`)
 
 ### API Documentation
 
@@ -110,4 +111,3 @@ MIT License
 ## Team
 
 Built for HackASU 2025
-
