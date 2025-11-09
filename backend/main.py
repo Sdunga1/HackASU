@@ -2,12 +2,16 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routes import issues, stats, ai, dashboard
 from app.config import settings
+from app.middleware.error_handler import setup_error_handlers
 
 app = FastAPI(
     title="DevAI Manager API",
     description="AI-powered project management API for GitHub and Jira",
     version="0.1.0",
 )
+
+# Setup centralized error handling
+setup_error_handlers(app)
 
 # CORS middleware
 app.add_middleware(
