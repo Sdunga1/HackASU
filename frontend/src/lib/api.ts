@@ -27,8 +27,16 @@ export interface ProjectStats {
 
 export const fetchIssues = async (): Promise<Issue[]> => {
   try {
-    const response = await apiClient.get<Issue[]>('/issues')
-    return response.data
+    // Try to fetch from dashboard endpoint first (MCP-synced data)
+    const response = await apiClient.get('/dashboard/issues')
+    
+    if (response.data.issues && response.data.issues.length > 0) {
+      return response.data.issues
+    }
+    
+    // Fallback to regular issues endpoint if no dashboard data
+    const fallbackResponse = await apiClient.get<Issue[]>('/issues')
+    return fallbackResponse.data
   } catch (error) {
     console.error('Error fetching issues:', error)
     throw error
