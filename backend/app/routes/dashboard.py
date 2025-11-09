@@ -10,7 +10,9 @@ router = APIRouter()
 dashboard_data = {
     "issues": [],
     "last_updated": None,
-    "repository": None
+    "repository": None,
+    "sprints": [],
+    "srs_document": None
 }
 
 # WebSocket connection manager for real-time updates
@@ -106,10 +108,16 @@ async def websocket_endpoint(websocket: WebSocket):
     """
     await manager.connect(websocket)
     try:
-        # Send current data on connection
+        # Send current data on connection (both issues and sprints)
         await websocket.send_json({
             "type": "initial_data",
-            "data": dashboard_data
+            "data": {
+                "issues": dashboard_data.get("issues", []),
+                "sprints": dashboard_data.get("sprints", []),
+                "srs_document": dashboard_data.get("srs_document"),
+                "repository": dashboard_data.get("repository"),
+                "last_updated": dashboard_data.get("last_updated")
+            }
         })
         
         # Keep connection alive
