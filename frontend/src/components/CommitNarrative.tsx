@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTheme } from '@/contexts/ThemeContext'
 
 interface CommitEvent {
   timestamp: string
@@ -297,6 +298,8 @@ const mockNarratives: TicketNarrative[] = [
 ]
 
 export default function CommitNarrative() {
+  const { theme } = useTheme()
+  const isDark = theme === 'dark'
   const [selectedTicket, setSelectedTicket] = useState<TicketNarrative>(mockNarratives[0])
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['timeline']))
 
@@ -361,11 +364,11 @@ export default function CommitNarrative() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'Done':
-        return 'bg-green-900 text-green-300 border-green-700'
+        return { bg: 'rgba(255, 198, 39, 0.15)', text: '#FFC627', border: 'rgba(255, 198, 39, 0.3)' }
       case 'In Progress':
-        return 'bg-blue-900 text-blue-300 border-blue-700'
+        return { bg: 'rgba(140, 29, 64, 0.15)', text: '#FFC627', border: 'rgba(140, 29, 64, 0.5)' }
       default:
-        return 'bg-gray-700 text-gray-300 border-gray-600'
+        return { bg: 'rgba(100, 100, 100, 0.15)', text: '#888', border: 'rgba(100, 100, 100, 0.3)' }
     }
   }
 
@@ -373,16 +376,16 @@ export default function CommitNarrative() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-100">Commit-to-Ticket Narratives</h2>
-          <p className="text-gray-400 mt-1">AI-generated summaries of ticket progress and blockers</p>
+          <h2 className="text-2xl font-bold" style={{ color: isDark ? '#f5f5f5' : '#1a1a1a' }}>Commit-to-Ticket Narratives</h2>
+          <p className="mt-1" style={{ color: isDark ? '#aaa' : '#666' }}>AI-generated summaries of ticket progress and blockers</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-1">
           <div className="card p-0">
-            <div className="p-4 border-b border-gray-700">
-              <h3 className="font-semibold text-gray-100">Recent Tickets</h3>
+            <div className="p-4" style={{ borderBottom: isDark ? '1px solid #444' : '1px solid #e5e5e5' }}>
+              <h3 className="font-semibold" style={{ color: isDark ? '#f5f5f5' : '#1a1a1a' }}>Recent Tickets</h3>
             </div>
             <div className="divide-y divide-gray-700">
               {mockNarratives.map((ticket) => (
@@ -395,7 +398,11 @@ export default function CommitNarrative() {
                 >
                   <div className="flex items-start justify-between mb-2">
                     <span className="text-sm font-mono text-gray-400">{ticket.ticketId}</span>
-                    <span className={`text-xs px-2 py-1 rounded-full border ${getStatusColor(ticket.status)}`}>
+                    <span className="text-xs px-2 py-1 rounded-full border" style={{
+                      backgroundColor: getStatusColor(ticket.status).bg,
+                      color: getStatusColor(ticket.status).text,
+                      borderColor: getStatusColor(ticket.status).border
+                    }}>
                       {ticket.status}
                     </span>
                   </div>
@@ -421,7 +428,11 @@ export default function CommitNarrative() {
               <div>
                 <div className="flex items-center gap-3 mb-2">
                   <h3 className="text-xl font-bold text-gray-100">{selectedTicket.ticketId}</h3>
-                  <span className={`text-sm px-3 py-1 rounded-full border ${getStatusColor(selectedTicket.status)}`}>
+                  <span className="text-sm px-3 py-1 rounded-full border" style={{
+                    backgroundColor: getStatusColor(selectedTicket.status).bg,
+                    color: getStatusColor(selectedTicket.status).text,
+                    borderColor: getStatusColor(selectedTicket.status).border
+                  }}>
                     {selectedTicket.status}
                   </span>
                 </div>
@@ -451,7 +462,10 @@ export default function CommitNarrative() {
 
             <div className="mt-6">
               <h4 className="text-sm font-semibold text-gray-300 mb-2">AI-Generated Narrative</h4>
-              <div className="p-4 bg-blue-900 bg-opacity-30 border-l-4 border-blue-500 rounded">
+              <div className="p-4 rounded" style={{
+                backgroundColor: 'rgba(140, 29, 64, 0.2)',
+                borderLeft: '4px solid #8C1D40'
+              }}>
                 <p className="text-gray-200 leading-relaxed">{selectedTicket.narrative}</p>
               </div>
             </div>
@@ -524,10 +538,10 @@ export default function CommitNarrative() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {selectedTicket.insights.delays.length > 0 && (
                   <div>
-                    <h5 className="text-sm font-semibold text-red-400 mb-2">Delays</h5>
+                    <h5 className="text-sm font-semibold mb-2" style={{ color: '#8C1D40' }}>Delays</h5>
                     <ul className="space-y-2">
                       {selectedTicket.insights.delays.map((delay, index) => (
-                        <li key={index} className="text-sm text-gray-300 pl-4 border-l-2 border-red-500">
+                        <li key={index} className="text-sm text-gray-300 pl-4" style={{ borderLeft: '2px solid #8C1D40' }}>
                           {delay}
                         </li>
                       ))}
@@ -537,10 +551,10 @@ export default function CommitNarrative() {
 
                 {selectedTicket.insights.blockers.length > 0 && (
                   <div>
-                    <h5 className="text-sm font-semibold text-amber-400 mb-2">Blockers</h5>
+                    <h5 className="text-sm font-semibold mb-2" style={{ color: '#FFC627' }}>Blockers</h5>
                     <ul className="space-y-2">
                       {selectedTicket.insights.blockers.map((blocker, index) => (
-                        <li key={index} className="text-sm text-gray-300 pl-4 border-l-2 border-amber-500">
+                        <li key={index} className="text-sm text-gray-300 pl-4" style={{ borderLeft: '2px solid #FFC627' }}>
                           {blocker}
                         </li>
                       ))}
@@ -549,10 +563,10 @@ export default function CommitNarrative() {
                 )}
 
                 <div>
-                  <h5 className="text-sm font-semibold text-green-400 mb-2">Resolutions</h5>
+                  <h5 className="text-sm font-semibold mb-2" style={{ color: '#FFC627' }}>Resolutions</h5>
                   <ul className="space-y-2">
                     {selectedTicket.insights.resolutions.map((resolution, index) => (
-                      <li key={index} className="text-sm text-gray-300 pl-4 border-l-2 border-green-500">
+                      <li key={index} className="text-sm text-gray-300 pl-4" style={{ borderLeft: '2px solid #FFC627' }}>
                         {resolution}
                       </li>
                     ))}
