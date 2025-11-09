@@ -1,13 +1,21 @@
 {
   "mcpServers": {
     "github": {
-      "command": "python",
-      "args": ["-m", "github_mcp.cli"],
-      "cwd": "/path/to/HackASU/mcp-servers/github-mcp",
+      "command": "/FULL/PATH/TO/HackASU/mcp-servers/github-mcp/venv/bin/github-mcp",
+      "args": [],
+      "cwd": "/FULL/PATH/TO/HackASU/mcp-servers/github-mcp",
       "env": {
-        "GITHUB_TOKEN": "your_github_token_here"
+        "GITHUB_TOKEN": "your_github_token_here",
+        "BACKEND_API_URL": "http://localhost:8000"
       }
     }
   }
 }
+
+// IMPORTANT: Replace /FULL/PATH/TO/ with the actual path to your HackASU directory
+// Example for macOS: /Users/yourusername/Desktop/HackASU/mcp-servers/github-mcp/venv/bin/github-mcp
+// Example for Linux: /home/yourusername/HackASU/mcp-servers/github-mcp/venv/bin/github-mcp
+//
+// NEW TOOL AVAILABLE: send_issues_to_dashboard(owner, repo, state)
+// This tool fetches GitHub issues and sends them to your dashboard in real-time!
 

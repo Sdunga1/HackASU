@@ -4,21 +4,21 @@
 
 @layer base {
   body {
-    @apply text-gray-900;
+    @apply text-gray-100 bg-gray-900;
   }
 }
 
 @layer components {
   .card {
-    @apply bg-white rounded-lg shadow-sm border border-gray-200 p-6;
+    @apply bg-gray-800 rounded-lg shadow-lg border border-gray-700 p-6;
   }
   
   .btn-primary {
-    @apply px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors duration-200 font-medium;
+    @apply px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200 font-medium;
   }
   
   .btn-secondary {
-    @apply px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors duration-200 font-medium;
+    @apply px-4 py-2 bg-gray-700 text-gray-200 rounded-md hover:bg-gray-600 transition-colors duration-200 font-medium;
   }
 }
 
