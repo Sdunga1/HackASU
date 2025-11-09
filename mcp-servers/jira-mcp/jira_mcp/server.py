@@ -355,6 +355,56 @@ def get_board_sprints(board_id: int, state: Optional[str] = None) -> str:
         }, indent=2)
 
 @mcp.tool()
+def get_board_issues(board_id: int, jql: Optional[str] = None, max_results: int = 50) -> str:
+    """Get issues from a board using the Agile API (workaround for search endpoint issues)
+    
+    Args:
+        board_id: The board ID
+        jql: Optional JQL query to filter issues
+        max_results: Maximum number of issues to return
+    """
+    try:
+        logger.info(f"Getting issues for board {board_id}")
+        issues_response = jira_client.get_board_issues(
+            board_id=board_id,
+            jql=jql,
+            max_results=min(max_results, 100)
+        )
+        
+        issues = []
+        for issue in issues_response.get("issues", []):
+            fields_data = issue.get("fields", {})
+            issues.append({
+                "key": issue.get("key"),
+                "id": issue.get("id"),
+                "summary": fields_data.get("summary"),
+                "status": fields_data.get("status", {}).get("name") if fields_data.get("status") else None,
+                "issue_type": fields_data.get("issuetype", {}).get("name") if fields_data.get("issuetype") else None,
+                "assignee": fields_data.get("assignee", {}).get("displayName") if fields_data.get("assignee") else None,
+                "reporter": fields_data.get("reporter", {}).get("displayName") if fields_data.get("reporter") else None,
+                "created": fields_data.get("created"),
+                "updated": fields_data.get("updated"),
+                "priority": fields_data.get("priority", {}).get("name") if fields_data.get("priority") else None,
+                "labels": fields_data.get("labels", []),
+                "url": f"{jira_client.url}/browse/{issue.get('key')}" if jira_client.url else None,
+            })
+        
+        return json.dumps({
+            "status": "success",
+            "message": f"Found {len(issues)} issues",
+            "board_id": board_id,
+            "total": issues_response.get("total", 0),
+            "issues": issues,
+            "count": len(issues)
+        }, indent=2)
+    except Exception as e:
+        logger.error(f"Error getting board issues: {e}")
+        return json.dumps({
+            "status": "error",
+            "message": f"Failed to get board issues: {str(e)}"
+        }, indent=2)
+
+@mcp.tool()
 def create_issue(
     project_key: str,
     summary: str,

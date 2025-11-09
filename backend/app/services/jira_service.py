@@ -29,16 +29,22 @@ class JiraService:
         
         jql = f"project = {project_key}"
         url = f"{self.url}/rest/api/3/search"
-        params = {"jql": jql, "maxResults": 50}
+        # Use POST for JQL search as per Jira API v3 requirements
+        data = {
+            "jql": jql,
+            "maxResults": 50,
+            "startAt": 0
+        }
         
         async with httpx.AsyncClient() as client:
             try:
-                response = await client.get(url, headers=self.headers, params=params)
+                response = await client.post(url, headers=self.headers, json=data)
                 response.raise_for_status()
                 data = response.json()
                 return data.get("issues", [])
             except Exception as e:
                 print(f"Error fetching Jira issues: {e}")
+                print(f"Response: {response.text if 'response' in locals() else 'No response'}")
                 return []
 
     async def assign_issue(self, issue_key: str, assignee: str) -> bool:

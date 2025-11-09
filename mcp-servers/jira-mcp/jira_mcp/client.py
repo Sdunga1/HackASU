@@ -170,13 +170,15 @@ class JiraClient:
     
     def search_issues(self, jql: str, start_at: int = 0, max_results: int = 50, fields: Optional[List[str]] = None, expand: Optional[str] = None) -> Dict:
         """Search issues using JQL."""
+        # Jira API v3 search endpoint requires POST for complex queries
         data = {
             "jql": jql,
             "startAt": start_at,
-            "maxResults": max_results,
+            "maxResults": min(max_results, 100),  # Cap at 100 as per API limits
         }
         if fields:
-            data["fields"] = fields
+            # Convert fields list to array format expected by API
+            data["fields"] = fields if isinstance(fields, list) else [fields]
         if expand:
             data["expand"] = expand
         return self._post("/search", data=data)
@@ -207,6 +209,22 @@ class JiraClient:
         try:
             response = self.session.get(url, params=params, timeout=REQUEST_TIMEOUT_SECONDS)
             return self._handle_api_response(response, f"/board/{board_id}/sprint")
+        except requests.exceptions.RequestException as e:
+            raise Exception(f"Request failed: {str(e)}")
+    
+    def get_board_issues(self, board_id: int, jql: Optional[str] = None, start_at: int = 0, max_results: int = 50) -> Dict:
+        """Get issues for a board using the Agile API."""
+        self._ensure_auth()
+        params = {
+            "startAt": start_at,
+            "maxResults": max_results,
+        }
+        if jql:
+            params["jql"] = jql
+        url = f"{self.url}/rest/agile/1.0/board/{board_id}/issue"
+        try:
+            response = self.session.get(url, params=params, timeout=REQUEST_TIMEOUT_SECONDS)
+            return self._handle_api_response(response, f"/board/{board_id}/issue")
         except requests.exceptions.RequestException as e:
             raise Exception(f"Request failed: {str(e)}")
     
