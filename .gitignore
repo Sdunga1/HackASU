@@ -43,6 +43,7 @@ htmlcov/
 mcp-servers/*/node_modules/
 mcp-servers/*/dist/
 mcp-servers/*/.env
+mcp-servers/*/mcp.json
 
 # Misc
 *.tmp
