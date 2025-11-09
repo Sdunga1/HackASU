@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTheme } from '@/contexts/ThemeContext'
 
 interface CommitEvent {
@@ -302,7 +302,45 @@ export default function CommitNarrative() {
   const isDark = theme === 'dark'
   const [selectedTicket, setSelectedTicket] = useState<TicketNarrative>(mockNarratives[0])
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['timeline']))
+  const [dataSource, setDataSource] = useState<'mock' | 'real'>('mock')
+  const [realNarratives, setRealNarratives] = useState<TicketNarrative[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  
+  // Get current narratives based on data source
+  const currentNarratives = dataSource === 'mock' ? mockNarratives : realNarratives
 
+  // Fetch real-time narratives from backend
+  const fetchRealNarratives = async () => {
+    setLoading(true)
+    setError(null)
+    
+    try {
+      const response = await fetch('http://localhost:8000/api/narratives/list')
+      const data = await response.json()
+      
+      if (data.status === 'success' && data.narratives.length > 0) {
+        setRealNarratives(data.narratives)
+        setDataSource('real')
+        setSelectedTicket(data.narratives[0])
+      } else {
+        setError('No real-time narratives available. Generate narratives using the MCP tool.')
+      }
+    } catch (err) {
+      console.error('Failed to fetch narratives:', err)
+      setError('Failed to fetch real-time data. Make sure the backend is running.')
+    } finally {
+      setLoading(false)
+    }
+  }
+  
+  // Switch to mock data
+  const switchToMock = () => {
+    setDataSource('mock')
+    setSelectedTicket(mockNarratives[0])
+    setError(null)
+  }
+  
   const toggleSection = (section: string) => {
     const newExpanded = new Set(expandedSections)
     if (newExpanded.has(section)) {
@@ -409,7 +447,59 @@ export default function CommitNarrative() {
           <h2 className="text-2xl font-bold" style={{ color: isDark ? '#f5f5f5' : '#1a1a1a' }}>Commit-to-Ticket Narratives</h2>
           <p className="mt-1" style={{ color: isDark ? '#aaa' : '#666' }}>AI-generated summaries of ticket progress and blockers</p>
         </div>
+        
+        <div className="flex items-center gap-3">
+          <span className="text-sm" style={{ color: isDark ? '#aaa' : '#666' }}>Data Source:</span>
+          <div className="flex gap-2">
+            <button
+              onClick={switchToMock}
+              disabled={loading}
+              className="px-4 py-2 rounded-lg text-sm font-medium transition-all"
+              style={{
+                backgroundColor: dataSource === 'mock' 
+                  ? (isDark ? 'rgba(140, 29, 64, 0.3)' : 'rgba(140, 29, 64, 0.2)')
+                  : (isDark ? '#1a1a1a' : '#f5f5f5'),
+                color: dataSource === 'mock' ? '#FFC627' : (isDark ? '#aaa' : '#666'),
+                border: `1px solid ${dataSource === 'mock' ? '#8C1D40' : (isDark ? '#3a3a3a' : '#e5e5e5')}`
+              }}
+            >
+              Mock Data
+            </button>
+            <button
+              onClick={fetchRealNarratives}
+              disabled={loading}
+              className="px-4 py-2 rounded-lg text-sm font-medium transition-all"
+              style={{
+                backgroundColor: dataSource === 'real' 
+                  ? (isDark ? 'rgba(140, 29, 64, 0.3)' : 'rgba(140, 29, 64, 0.2)')
+                  : (isDark ? '#1a1a1a' : '#f5f5f5'),
+                color: dataSource === 'real' ? '#FFC627' : (isDark ? '#aaa' : '#666'),
+                border: `1px solid ${dataSource === 'real' ? '#8C1D40' : (isDark ? '#3a3a3a' : '#e5e5e5')}`
+              }}
+            >
+              {loading ? 'Loading...' : 'Real-Time Data'}
+            </button>
+          </div>
+        </div>
       </div>
+      
+      {error && (
+        <div className="p-4 rounded-lg" style={{
+          backgroundColor: isDark ? 'rgba(239, 68, 68, 0.1)' : 'rgba(239, 68, 68, 0.05)',
+          border: `1px solid ${isDark ? 'rgba(239, 68, 68, 0.3)' : 'rgba(239, 68, 68, 0.2)'}`,
+          color: isDark ? '#fca5a5' : '#dc2626'
+        }}>
+          <div className="flex items-start gap-2">
+            <svg className="w-5 h-5 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div>
+              <p className="font-medium">Error loading real-time data</p>
+              <p className="text-sm mt-1">{error}</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-1">
@@ -422,7 +512,13 @@ export default function CommitNarrative() {
               <h3 className="font-semibold" style={{ color: isDark ? '#f5f5f5' : '#1a1a1a' }}>Recent Tickets</h3>
             </div>
             <div style={{ borderTop: isDark ? '1px solid #3a3a3a' : '1px solid #e5e5e5' }}>
-              {mockNarratives.map((ticket, index) => (
+              {currentNarratives.length === 0 ? (
+                <div className="p-8 text-center" style={{ color: isDark ? '#aaa' : '#666' }}>
+                  <p>No narratives available</p>
+                  <p className="text-sm mt-2">Click "Real-Time Data" to load from backend</p>
+                </div>
+              ) : (
+                currentNarratives.map((ticket, index) => (
                 <button
                   key={ticket.ticketId}
                   onClick={() => setSelectedTicket(ticket)}
@@ -469,7 +565,7 @@ export default function CommitNarrative() {
                     )}
                   </div>
                 </button>
-              ))}
+              )))}
             </div>
           </div>
         </div>

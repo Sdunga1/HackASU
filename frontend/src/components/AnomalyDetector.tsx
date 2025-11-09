@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTheme } from '@/contexts/ThemeContext'
 
 interface Anomaly {
@@ -182,8 +182,45 @@ export default function AnomalyDetector() {
   const [selectedAnomaly, setSelectedAnomaly] = useState<Anomaly | null>(null)
   const [filterSeverity, setFilterSeverity] = useState<'all' | 'high' | 'medium' | 'low'>('all')
   const [filterType, setFilterType] = useState<string>('all')
+  const [dataSource, setDataSource] = useState<'mock' | 'real'>('mock')
+  const [realAnomalies, setRealAnomalies] = useState<Anomaly[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  
+  // Get current anomalies based on data source
+  const currentAnomalies = dataSource === 'mock' ? mockAnomalies : realAnomalies
 
-  const filteredAnomalies = mockAnomalies.filter(anomaly => {
+  // Fetch real-time anomalies from backend
+  const fetchRealAnomalies = async () => {
+    setLoading(true)
+    setError(null)
+    
+    try {
+      const response = await fetch('http://localhost:8000/api/anomalies/list')
+      const data = await response.json()
+      
+      if (data.status === 'success' && data.anomalies.length > 0) {
+        setRealAnomalies(data.anomalies)
+        setDataSource('real')
+      } else {
+        setError('No real-time anomalies available. Detect anomalies using the MCP tool.')
+      }
+    } catch (err) {
+      console.error('Failed to fetch anomalies:', err)
+      setError('Failed to fetch real-time data. Make sure the backend is running.')
+    } finally {
+      setLoading(false)
+    }
+  }
+  
+  // Switch to mock data
+  const switchToMock = () => {
+    setDataSource('mock')
+    setSelectedAnomaly(null)
+    setError(null)
+  }
+  
+  const filteredAnomalies = currentAnomalies.filter(anomaly => {
     const severityMatch = filterSeverity === 'all' || anomaly.severity === filterSeverity
     const typeMatch = filterType === 'all' || anomaly.type === filterType
     return severityMatch && typeMatch
@@ -238,12 +275,12 @@ export default function AnomalyDetector() {
     return labels[type] || type
   }
 
-  const anomalyTypeCount = mockAnomalies.reduce((acc, anomaly) => {
+  const anomalyTypeCount = currentAnomalies.reduce((acc, anomaly) => {
     acc[anomaly.type] = (acc[anomaly.type] || 0) + 1
     return acc
   }, {} as Record<string, number>)
 
-  const severityCount = mockAnomalies.reduce((acc, anomaly) => {
+  const severityCount = currentAnomalies.reduce((acc, anomaly) => {
     acc[anomaly.severity] = (acc[anomaly.severity] || 0) + 1
     return acc
   }, {} as Record<string, number>)
@@ -255,14 +292,66 @@ export default function AnomalyDetector() {
           <h2 className="text-2xl font-bold" style={{ color: isDark ? '#f5f5f5' : '#1a1a1a' }}>Cross-Platform Anomaly Detection</h2>
           <p className="mt-1" style={{ color: isDark ? '#aaa' : '#666' }}>AI-powered detection of workflow issues across GitHub and Jira</p>
         </div>
+        
+        <div className="flex items-center gap-3">
+          <span className="text-sm" style={{ color: isDark ? '#aaa' : '#666' }}>Data Source:</span>
+          <div className="flex gap-2">
+            <button
+              onClick={switchToMock}
+              disabled={loading}
+              className="px-4 py-2 rounded-lg text-sm font-medium transition-all"
+              style={{
+                backgroundColor: dataSource === 'mock' 
+                  ? (isDark ? 'rgba(140, 29, 64, 0.3)' : 'rgba(140, 29, 64, 0.2)')
+                  : (isDark ? '#1a1a1a' : '#f5f5f5'),
+                color: dataSource === 'mock' ? '#FFC627' : (isDark ? '#aaa' : '#666'),
+                border: `1px solid ${dataSource === 'mock' ? '#8C1D40' : (isDark ? '#3a3a3a' : '#e5e5e5')}`
+              }}
+            >
+              Mock Data
+            </button>
+            <button
+              onClick={fetchRealAnomalies}
+              disabled={loading}
+              className="px-4 py-2 rounded-lg text-sm font-medium transition-all"
+              style={{
+                backgroundColor: dataSource === 'real' 
+                  ? (isDark ? 'rgba(140, 29, 64, 0.3)' : 'rgba(140, 29, 64, 0.2)')
+                  : (isDark ? '#1a1a1a' : '#f5f5f5'),
+                color: dataSource === 'real' ? '#FFC627' : (isDark ? '#aaa' : '#666'),
+                border: `1px solid ${dataSource === 'real' ? '#8C1D40' : (isDark ? '#3a3a3a' : '#e5e5e5')}`
+              }}
+            >
+              {loading ? 'Loading...' : 'Real-Time Data'}
+            </button>
+          </div>
+        </div>
       </div>
+      
+      {error && (
+        <div className="p-4 rounded-lg" style={{
+          backgroundColor: isDark ? 'rgba(239, 68, 68, 0.1)' : 'rgba(239, 68, 68, 0.05)',
+          border: `1px solid ${isDark ? 'rgba(239, 68, 68, 0.3)' : 'rgba(239, 68, 68, 0.2)'}`,
+          color: isDark ? '#fca5a5' : '#dc2626'
+        }}>
+          <div className="flex items-start gap-2">
+            <svg className="w-5 h-5 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div>
+              <p className="font-medium">Error loading real-time data</p>
+              <p className="text-sm mt-1">{error}</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="card">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm" style={{ color: isDark ? '#aaa' : '#666' }}>Total Anomalies</p>
-              <p className="text-3xl font-bold mt-1" style={{ color: isDark ? '#f5f5f5' : '#1a1a1a' }}>{mockAnomalies.length}</p>
+              <p className="text-3xl font-bold mt-1" style={{ color: isDark ? '#f5f5f5' : '#1a1a1a' }}>{currentAnomalies.length}</p>
             </div>
             <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{
               backgroundColor: isDark ? 'rgba(100, 100, 100, 0.2)' : 'rgba(100, 100, 100, 0.1)',
@@ -371,7 +460,15 @@ export default function AnomalyDetector() {
         </div>
 
         <div className="space-y-3">
-          {filteredAnomalies.map((anomaly) => (
+          {filteredAnomalies.length === 0 ? (
+            <div className="p-8 text-center" style={{ color: isDark ? '#aaa' : '#666' }}>
+              <p>No anomalies found matching the filters</p>
+              {dataSource === 'mock' && (
+                <p className="text-sm mt-2">Click "Real-Time Data" to detect anomalies from live data</p>
+              )}
+            </div>
+          ) : (
+            filteredAnomalies.map((anomaly) => (
             <div
               key={anomaly.id}
               className="rounded-lg p-4 hover:shadow-xl transition-all cursor-pointer"
@@ -433,7 +530,7 @@ export default function AnomalyDetector() {
                 )}
               </div>
             </div>
-          ))}
+          )))}
         </div>
       </div>
 
