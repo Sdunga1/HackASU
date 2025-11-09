@@ -354,6 +354,253 @@ def get_board_sprints(board_id: int, state: Optional[str] = None) -> str:
             "message": f"Failed to get board sprints: {str(e)}"
         }, indent=2)
 
+@mcp.tool()
+def create_issue(
+    project_key: str,
+    summary: str,
+    issue_type: str,
+    description: Optional[str] = None,
+    assignee: Optional[str] = None,
+    priority: Optional[str] = None,
+    labels: Optional[str] = None
+) -> str:
+    """Create a new Jira issue
+    
+    Args:
+        project_key: The project key (e.g., 'SCRUM')
+        summary: Issue summary/title
+        issue_type: Issue type (e.g., 'Task', 'Bug', 'Story')
+        description: Optional issue description
+        assignee: Optional assignee account ID or name
+        priority: Optional priority (e.g., 'High', 'Medium', 'Low')
+        labels: Optional comma-separated list of labels
+    """
+    try:
+        logger.info(f"Creating issue in project {project_key}")
+        
+        labels_list = None
+        if labels:
+            labels_list = [l.strip() for l in labels.split(",")]
+        
+        issue = jira_client.create_issue(
+            project_key=project_key,
+            summary=summary,
+            issue_type=issue_type,
+            description=description,
+            assignee=assignee,
+            priority=priority,
+            labels=labels_list
+        )
+        
+        return json.dumps({
+            "status": "success",
+            "message": f"Successfully created issue {issue.get('key')}",
+            "issue": {
+                "key": issue.get("key"),
+                "id": issue.get("id"),
+                "url": f"{jira_client.url}/browse/{issue.get('key')}" if jira_client.url else None,
+            }
+        }, indent=2)
+    except Exception as e:
+        logger.error(f"Error creating issue: {e}")
+        return json.dumps({
+            "status": "error",
+            "message": f"Failed to create issue: {str(e)}"
+        }, indent=2)
+
+@mcp.tool()
+def update_issue(
+    issue_key: str,
+    summary: Optional[str] = None,
+    description: Optional[str] = None,
+    assignee: Optional[str] = None,
+    priority: Optional[str] = None,
+    labels: Optional[str] = None
+) -> str:
+    """Update an existing Jira issue
+    
+    Args:
+        issue_key: The issue key (e.g., 'PROJ-123')
+        summary: Optional new summary
+        description: Optional new description
+        assignee: Optional new assignee
+        priority: Optional new priority
+        labels: Optional comma-separated list of labels
+    """
+    try:
+        logger.info(f"Updating issue {issue_key}")
+        
+        labels_list = None
+        if labels:
+            labels_list = [l.strip() for l in labels.split(",")]
+        
+        jira_client.update_issue(
+            issue_key=issue_key,
+            summary=summary,
+            description=description,
+            assignee=assignee,
+            priority=priority,
+            labels=labels_list
+        )
+        
+        return json.dumps({
+            "status": "success",
+            "message": f"Successfully updated issue {issue_key}",
+            "issue_key": issue_key,
+            "url": f"{jira_client.url}/browse/{issue_key}" if jira_client.url else None,
+        }, indent=2)
+    except Exception as e:
+        logger.error(f"Error updating issue: {e}")
+        return json.dumps({
+            "status": "error",
+            "message": f"Failed to update issue: {str(e)}"
+        }, indent=2)
+
+@mcp.tool()
+def delete_issue(issue_key: str) -> str:
+    """Delete a Jira issue
+    
+    Args:
+        issue_key: The issue key (e.g., 'PROJ-123')
+    """
+    try:
+        logger.info(f"Deleting issue {issue_key}")
+        jira_client.delete_issue(issue_key=issue_key)
+        
+        return json.dumps({
+            "status": "success",
+            "message": f"Successfully deleted issue {issue_key}",
+            "issue_key": issue_key
+        }, indent=2)
+    except Exception as e:
+        logger.error(f"Error deleting issue: {e}")
+        return json.dumps({
+            "status": "error",
+            "message": f"Failed to delete issue: {str(e)}"
+        }, indent=2)
+
+@mcp.tool()
+def add_comment(issue_key: str, comment: str) -> str:
+    """Add a comment to a Jira issue
+    
+    Args:
+        issue_key: The issue key (e.g., 'PROJ-123')
+        comment: The comment text
+    """
+    try:
+        logger.info(f"Adding comment to issue {issue_key}")
+        result = jira_client.add_comment(issue_key=issue_key, comment_text=comment)
+        
+        return json.dumps({
+            "status": "success",
+            "message": f"Successfully added comment to issue {issue_key}",
+            "comment_id": result.get("id"),
+            "issue_key": issue_key
+        }, indent=2)
+    except Exception as e:
+        logger.error(f"Error adding comment: {e}")
+        return json.dumps({
+            "status": "error",
+            "message": f"Failed to add comment: {str(e)}"
+        }, indent=2)
+
+@mcp.tool()
+def transition_issue(issue_key: str, transition_name: str, comment: Optional[str] = None) -> str:
+    """Transition an issue to a new status
+    
+    Args:
+        issue_key: The issue key (e.g., 'PROJ-123')
+        transition_name: The transition name (e.g., 'In Progress', 'Done')
+        comment: Optional comment to add with the transition
+    """
+    try:
+        logger.info(f"Transitioning issue {issue_key} to {transition_name}")
+        
+        # Get available transitions
+        transitions_response = jira_client.get_transitions(issue_key=issue_key)
+        transitions = transitions_response.get("transitions", [])
+        
+        # Find matching transition
+        transition_id = None
+        for t in transitions:
+            if t.get("name", "").lower() == transition_name.lower() or t.get("to", {}).get("name", "").lower() == transition_name.lower():
+                transition_id = t.get("id")
+                break
+        
+        if not transition_id:
+            available = [t.get("name") or t.get("to", {}).get("name") for t in transitions]
+            return json.dumps({
+                "status": "error",
+                "message": f"Transition '{transition_name}' not found. Available transitions: {', '.join(available)}"
+            }, indent=2)
+        
+        jira_client.transition_issue(
+            issue_key=issue_key,
+            transition_id=transition_id,
+            comment=comment
+        )
+        
+        return json.dumps({
+            "status": "success",
+            "message": f"Successfully transitioned issue {issue_key} to {transition_name}",
+            "issue_key": issue_key,
+            "transition": transition_name
+        }, indent=2)
+    except Exception as e:
+        logger.error(f"Error transitioning issue: {e}")
+        return json.dumps({
+            "status": "error",
+            "message": f"Failed to transition issue: {str(e)}"
+        }, indent=2)
+
+@mcp.tool()
+def batch_create_issues(issues_json: str) -> str:
+    """Create multiple Jira issues in a single request
+    
+    Args:
+        issues_json: JSON string array of issues to create. Each issue should have:
+                    - project_key: Project key (e.g., 'SCRUM')
+                    - summary: Issue summary
+                    - issue_type: Issue type (e.g., 'Task', 'Bug', 'Story')
+                    - description: Optional description
+                    - assignee: Optional assignee
+                    - priority: Optional priority
+                    - labels: Optional array of labels
+    """
+    try:
+        logger.info("Batch creating issues")
+        issues = json.loads(issues_json)
+        
+        result = jira_client.batch_create_issues(issues=issues)
+        
+        created_issues = []
+        errors = []
+        
+        for item in result.get("issues", []):
+            if item:
+                created_issues.append({
+                    "key": item.get("key"),
+                    "id": item.get("id"),
+                    "url": f"{jira_client.url}/browse/{item.get('key')}" if jira_client.url else None,
+                })
+        
+        for error in result.get("errors", []):
+            errors.append(error)
+        
+        return json.dumps({
+            "status": "success" if not errors else "partial_success",
+            "message": f"Created {len(created_issues)} issues" + (f", {len(errors)} failed" if errors else ""),
+            "created_issues": created_issues,
+            "errors": errors,
+            "count": len(created_issues)
+        }, indent=2)
+    except Exception as e:
+        logger.error(f"Error batch creating issues: {e}")
+        return json.dumps({
+            "status": "error",
+            "message": f"Failed to batch create issues: {str(e)}"
+        }, indent=2)
+
 def run():
     """Run the MCP server"""
     if not jira_client.url:

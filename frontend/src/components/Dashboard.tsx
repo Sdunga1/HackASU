@@ -43,7 +43,7 @@ export default function Dashboard() {
     const wsUrl = process.env.NEXT_PUBLIC_API_URL?.replace('http', 'ws') || 'ws://localhost:8000'
     const ws = new WebSocket(`${wsUrl}/api/dashboard/ws`)
     
-    ws.onmessage = (event) => {
+    const messageHandler = (event: MessageEvent) => {
       const message = JSON.parse(event.data)
       if (message.type === 'issues_update' || message.type === 'initial_data') {
         if (message.data.issues && message.data.issues.length > 0) {
@@ -53,12 +53,22 @@ export default function Dashboard() {
       }
     }
     
-    ws.onerror = (error) => {
+    const errorHandler = (error: Event) => {
       console.log('WebSocket error (this is normal if backend is not running):', error)
     }
     
+    ws.addEventListener('message', messageHandler)
+    ws.addEventListener('error', errorHandler)
+    
     return () => {
-      ws.close()
+      // Proper cleanup: remove event listeners before closing
+      ws.removeEventListener('message', messageHandler)
+      ws.removeEventListener('error', errorHandler)
+      
+      // Close WebSocket connection
+      if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
+        ws.close(1000, 'Component unmounting')
+      }
     }
   }, [])
 
