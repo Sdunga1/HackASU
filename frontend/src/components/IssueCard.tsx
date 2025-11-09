@@ -15,30 +15,40 @@ interface IssueCardProps {
   issue: Issue
 }
 
-const getStatusColor = (status: string) => {
-  const statusMap: Record<string, string> = {
-    open: 'border-[#FFC627]',
-    closed: 'border-gray-600',
-    'in-progress': 'border-[#8C1D40]',
-    blocked: 'border-[#8C1D40]',
-  }
-  const bgMap: Record<string, string> = {
-    open: 'rgba(255, 198, 39, 0.15)',
-    closed: 'rgba(100, 100, 100, 0.15)',
-    'in-progress': 'rgba(140, 29, 64, 0.15)',
-    blocked: 'rgba(140, 29, 64, 0.25)',
-  }
-  const textMap: Record<string, string> = {
-    open: '#FFC627',
-    closed: '#aaa',
-    'in-progress': '#FFC627',
-    blocked: '#FFC627',
-  }
+const getStatusColor = (status: string, isDark: boolean) => {
   const key = status.toLowerCase()
+  
+  if (key === 'open') {
+    return {
+      border: isDark ? 'rgba(34, 197, 94, 0.4)' : 'rgba(34, 197, 94, 0.3)',
+      bg: isDark ? 'rgba(34, 197, 94, 0.15)' : 'rgba(34, 197, 94, 0.1)',
+      text: '#22c55e' // Green
+    }
+  } else if (key === 'in-progress' || key === 'in progress') {
+    return {
+      border: isDark ? 'rgba(255, 198, 39, 0.4)' : 'rgba(255, 198, 39, 0.3)',
+      bg: isDark ? 'rgba(255, 198, 39, 0.15)' : 'rgba(255, 198, 39, 0.1)',
+      text: '#FFC627' // Yellow
+    }
+  } else if (key === 'done' || key === 'closed') {
+    return {
+      border: isDark ? 'rgba(239, 68, 68, 0.4)' : 'rgba(239, 68, 68, 0.3)',
+      bg: isDark ? 'rgba(239, 68, 68, 0.15)' : 'rgba(239, 68, 68, 0.1)',
+      text: '#ef4444' // Red
+    }
+  } else if (key === 'blocked') {
+    return {
+      border: isDark ? 'rgba(140, 29, 64, 0.4)' : 'rgba(140, 29, 64, 0.3)',
+      bg: isDark ? 'rgba(140, 29, 64, 0.15)' : 'rgba(140, 29, 64, 0.1)',
+      text: '#8C1D40' // Maroon
+    }
+  }
+  
+  // Default
   return {
-    border: statusMap[key] || 'border-gray-600',
-    bg: bgMap[key] || 'rgba(100, 100, 100, 0.15)',
-    text: textMap[key] || '#aaa'
+    border: isDark ? 'rgba(100, 100, 100, 0.4)' : 'rgba(100, 100, 100, 0.3)',
+    bg: isDark ? 'rgba(100, 100, 100, 0.15)' : 'rgba(100, 100, 100, 0.1)',
+    text: isDark ? '#aaa' : '#666'
   }
 }
 
@@ -54,7 +64,7 @@ const getPriorityColor = (priority: string) => {
 export default function IssueCard({ issue }: IssueCardProps) {
   const { theme } = useTheme()
   const isDark = theme === 'dark'
-  const statusColors = getStatusColor(issue.status)
+  const statusColors = getStatusColor(issue.status, isDark)
   
   return (
     <div className="card hover:shadow-xl transition-shadow duration-200" style={{
@@ -65,9 +75,10 @@ export default function IssueCard({ issue }: IssueCardProps) {
           {issue.title}
         </h3>
         <span 
-          className={`px-2 py-1 text-xs font-medium rounded-full border ${statusColors.border}`}
+          className="px-2 py-1 text-xs font-medium rounded-full border"
           style={{ 
             backgroundColor: statusColors.bg,
+            borderColor: statusColors.border,
             color: statusColors.text
           }}
         >

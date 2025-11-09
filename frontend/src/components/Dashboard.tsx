@@ -317,7 +317,7 @@ export default function Dashboard() {
               <div className="mt-12">
                 <div className="card p-8 text-center" style={{
                   borderColor: isDark ? 'rgba(140, 29, 64, 0.4)' : 'rgba(140, 29, 64, 0.3)',
-                  backgroundColor: isDark ? '#1a1a1a' : '#ffffff',
+                  backgroundColor: isDark ? '#252525' : '#ffffff',
                 }}>
                   <div className="p-4 rounded-lg inline-block mb-4" style={{
                     backgroundColor: isDark ? 'rgba(140, 29, 64, 0.2)' : 'rgba(140, 29, 64, 0.1)',
@@ -329,42 +329,9 @@ export default function Dashboard() {
                   <h3 className="text-xl font-semibold mb-2" style={{ color: isDark ? '#f5f5f5' : '#1a1a1a' }}>
                     No Sprints Generated Yet
                   </h3>
-                  <p className="text-sm mb-6 max-w-2xl mx-auto" style={{ color: isDark ? '#aaa' : '#666' }}>
-                    To see sprints and user stories, you need to process an SRS document first.
+                  <p className="text-sm max-w-2xl mx-auto" style={{ color: isDark ? '#aaa' : '#666' }}>
+                    To see sprints and user stories, process an SRS document and "Read the SRS document from Google Docs at [URL]"
                   </p>
-                  <div className="max-w-2xl mx-auto space-y-4">
-                    <div className="p-4 rounded-lg text-left" style={{
-                      backgroundColor: isDark ? 'rgba(255, 198, 39, 0.1)' : 'rgba(255, 198, 39, 0.05)',
-                      border: `1px solid ${isDark ? 'rgba(255, 198, 39, 0.2)' : 'rgba(255, 198, 39, 0.3)'}`,
-                    }}>
-                      <p className="text-sm font-semibold mb-2" style={{ color: '#FFC627' }}>
-                        Option 1: Use Cursor with MCP (Recommended)
-                      </p>
-                      <p className="text-xs" style={{ color: isDark ? '#aaa' : '#666' }}>
-                        In Cursor, ask: <code className="px-2 py-1 rounded text-xs" style={{
-                          backgroundColor: isDark ? 'rgba(140, 29, 64, 0.2)' : 'rgba(140, 29, 64, 0.1)',
-                          color: '#8C1D40'
-                        }}>"Read the SRS document from Google Docs at [URL] and send sprints to the dashboard"</code>
-                      </p>
-                    </div>
-                    <div className="p-4 rounded-lg text-left" style={{
-                      backgroundColor: isDark ? 'rgba(140, 29, 64, 0.1)' : 'rgba(140, 29, 64, 0.05)',
-                      border: `1px solid ${isDark ? 'rgba(140, 29, 64, 0.2)' : 'rgba(140, 29, 64, 0.3)'}`,
-                    }}>
-                      <p className="text-sm font-semibold mb-2" style={{ color: isDark ? '#f5f5f5' : '#1a1a1a' }}>
-                        Option 2: Test with Script
-                      </p>
-                      <p className="text-xs mb-2" style={{ color: isDark ? '#aaa' : '#666' }}>
-                        Run the test script from the project root:
-                      </p>
-                      <code className="block px-3 py-2 rounded text-xs" style={{
-                        backgroundColor: isDark ? '#2a2a2a' : '#f5f5f5',
-                        color: isDark ? '#f5f5f5' : '#1a1a1a',
-                      }}>
-                        ./test_srs_processing.sh
-                      </code>
-                    </div>
-                  </div>
                 </div>
               </div>
             )}
