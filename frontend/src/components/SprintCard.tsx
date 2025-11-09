@@ -22,18 +22,53 @@ interface Sprint {
 
 interface SprintCardProps {
   sprint: Sprint
+  isSelected?: boolean
 }
 
-export default function SprintCard({ sprint }: SprintCardProps) {
+export default function SprintCard({ sprint, isSelected = false }: SprintCardProps) {
   const { theme } = useTheme()
   const isDark = theme === 'dark'
   
   return (
-    <div className="card hover:shadow-xl transition-shadow duration-200" style={{
-      borderColor: 'rgba(140, 29, 64, 0.4)'
-    }}>
+    <div 
+      className="card hover:shadow-lg transition-all duration-200 relative" 
+      style={{
+        borderColor: isSelected 
+          ? '#8C1D40' 
+          : isDark 
+          ? 'rgba(140, 29, 64, 0.3)' 
+          : 'rgba(140, 29, 64, 0.2)',
+        backgroundColor: isSelected
+          ? isDark
+            ? 'rgba(140, 29, 64, 0.12)'
+            : 'rgba(140, 29, 64, 0.08)'
+          : isDark
+          ? '#1a1a1a'
+          : '#ffffff',
+        borderWidth: isSelected ? '2px' : '1px',
+        boxShadow: isSelected
+          ? isDark
+            ? '0 4px 12px rgba(140, 29, 64, 0.25)'
+            : '0 4px 12px rgba(140, 29, 64, 0.2)'
+          : '0 2px 8px rgba(0, 0, 0, 0.1)',
+      }}
+    >
+      {/* Clean Selection Indicator */}
+      {isSelected && (
+        <div
+          className="absolute top-0 left-0 w-1 h-full"
+          style={{ backgroundColor: '#8C1D40' }}
+        />
+      )}
       <div className="flex items-start justify-between mb-3">
-        <h3 className="text-lg font-semibold flex-1" style={{ color: isDark ? '#f5f5f5' : '#1a1a1a' }}>
+        <h3 
+          className="text-lg font-semibold flex-1" 
+          style={{ 
+            color: isDark 
+              ? '#f5f5f5' 
+              : '#1a1a1a' 
+          }}
+        >
           {sprint.name}
         </h3>
         <span 
@@ -70,7 +105,7 @@ export default function SprintCard({ sprint }: SprintCardProps) {
               className="h-full transition-all duration-300"
               style={{
                 width: `${sprint.progress}%`,
-                backgroundColor: '#FFC627',
+                backgroundColor: isSelected ? '#8C1D40' : '#FFC627',
               }}
             />
           </div>
