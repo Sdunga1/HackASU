@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import Header from './Header'
 import IssueCard from './IssueCard'
 import ProjectStats from './ProjectStats'
+import CommitNarrative from './CommitNarrative'
+import AnomalyDetector from './AnomalyDetector'
 import { fetchIssues, fetchProjectStats } from '@/lib/api'
 
 interface Issue {
@@ -22,7 +24,10 @@ interface ProjectStats {
   inProgress: number
 }
 
+type TabType = 'overview' | 'narratives' | 'anomalies'
+
 export default function Dashboard() {
+  const [activeTab, setActiveTab] = useState<TabType>('overview')
   const [issues, setIssues] = useState<Issue[]>([])
   const [stats, setStats] = useState<ProjectStats | null>(null)
   const [loading, setLoading] = useState(true)
@@ -30,6 +35,28 @@ export default function Dashboard() {
 
   useEffect(() => {
     loadDashboardData()
+    
+    // Setup WebSocket for real-time updates
+    const wsUrl = process.env.NEXT_PUBLIC_API_URL?.replace('http', 'ws') || 'ws://localhost:8000'
+    const ws = new WebSocket(`${wsUrl}/api/dashboard/ws`)
+    
+    ws.onmessage = (event) => {
+      const message = JSON.parse(event.data)
+      if (message.type === 'issues_update' || message.type === 'initial_data') {
+        if (message.data.issues && message.data.issues.length > 0) {
+          setIssues(message.data.issues)
+          console.log('Real-time update received:', message.data.issues.length, 'issues')
+        }
+      }
+    }
+    
+    ws.onerror = (error) => {
+      console.log('WebSocket error (this is normal if backend is not running):', error)
+    }
+    
+    return () => {
+      ws.close()
+    }
   }, [])
 
   const loadDashboardData = async () => {
@@ -51,10 +78,10 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen bg-gray-900">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading dashboard...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-4 text-gray-400">Loading dashboard...</p>
         </div>
       </div>
     )
@@ -62,9 +89,9 @@ export default function Dashboard() {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen bg-gray-900">
         <div className="text-center">
-          <p className="text-red-600 mb-4">{error}</p>
+          <p className="text-red-400 mb-4">{error}</p>
           <button onClick={loadDashboardData} className="btn-primary">
             Retry
           </button>
@@ -73,32 +100,80 @@ export default function Dashboard() {
     )
   }
 
+  const tabs = [
+    { id: 'overview' as TabType, name: 'Overview', icon: (
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+      </svg>
+    )},
+    { id: 'narratives' as TabType, name: 'Commit Narratives', icon: (
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+      </svg>
+    )},
+    { id: 'anomalies' as TabType, name: 'Anomaly Detection', icon: (
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+      </svg>
+    )}
+  ]
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-900">
       <Header />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {stats && <ProjectStats stats={stats} />}
-        
-        <div className="mt-8">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">Issues</h2>
-            <button onClick={loadDashboardData} className="btn-secondary">
-              Refresh
-            </button>
-          </div>
-          
-          {issues.length === 0 ? (
-            <div className="card text-center py-12">
-              <p className="text-gray-500">No issues found. Connect your repositories to get started.</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {issues.map((issue) => (
-                <IssueCard key={issue.id} issue={issue} />
-              ))}
-            </div>
-          )}
+      
+      <div className="border-b border-gray-700 bg-gray-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <nav className="flex space-x-8">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                  activeTab === tab.id
+                    ? 'border-blue-500 text-blue-400'
+                    : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-600'
+                }`}
+              >
+                {tab.icon}
+                {tab.name}
+              </button>
+            ))}
+          </nav>
         </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {activeTab === 'overview' && (
+          <>
+            {stats && <ProjectStats stats={stats} />}
+            
+            <div className="mt-8">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-100">Issues</h2>
+                <button onClick={loadDashboardData} className="btn-secondary">
+                  Refresh
+                </button>
+              </div>
+              
+              {issues.length === 0 ? (
+                <div className="card text-center py-12">
+                  <p className="text-gray-400">No issues found. Connect your repositories to get started.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {issues.map((issue) => (
+                    <IssueCard key={issue.id} issue={issue} />
+                  ))}
+                </div>
+              )}
+            </div>
+          </>
+        )}
+
+        {activeTab === 'narratives' && <CommitNarrative />}
+        
+        {activeTab === 'anomalies' && <AnomalyDetector />}
       </div>
     </div>
   )
