@@ -6,8 +6,11 @@ import IssueCard from './IssueCard';
 import ProjectStats from './ProjectStats';
 import CommitNarrative from './CommitNarrative';
 import AnomalyDetector from './AnomalyDetector';
+import SrsSprintPlanner from './SrsSprintPlanner';
+import SprintCard from './SprintCard';
+import UserStoryCard from './UserStoryCard';
 import { Chatbot } from './Chatbot';
-import { fetchIssues, fetchProjectStats } from '@/lib/api';
+import { fetchIssues, fetchProjectStats, getSprints, type Sprint } from '@/lib/api';
 import { useTheme } from '@/contexts/ThemeContext';
 
 interface Issue {
@@ -37,6 +40,8 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [sprints, setSprints] = useState<Sprint[]>([]);
+  const [selectedSprint, setSelectedSprint] = useState<Sprint | null>(null);
 
   useEffect(() => {
     loadDashboardData();
@@ -57,6 +62,17 @@ export default function Dashboard() {
             message.data.issues.length,
             'issues'
           );
+        }
+      }
+      // Handle sprint updates
+      if (message.type === 'sprints_update' || message.type === 'initial_data') {
+        if (message.data.sprints) {
+          console.log(
+            'Real-time sprint update received:',
+            message.data.sprints.length,
+            'sprints'
+          );
+          setSprints(message.data.sprints);
         }
       }
     };
@@ -89,12 +105,14 @@ export default function Dashboard() {
   const loadDashboardData = async () => {
     try {
       setLoading(true);
-      const [issuesData, statsData] = await Promise.all([
+      const [issuesData, statsData, sprintsData] = await Promise.all([
         fetchIssues(),
         fetchProjectStats(),
+        getSprints(),
       ]);
       setIssues(issuesData);
       setStats(statsData);
+      setSprints(sprintsData);
     } catch (err) {
       setError('Failed to load dashboard data');
       console.error('Dashboard load error:', err);
@@ -286,6 +304,170 @@ export default function Dashboard() {
                 </div>
               )}
             </div>
+
+            {/* Sprints Section */}
+            {sprints.length === 0 && (
+              <div className="mt-12">
+                <div className="card p-8 text-center" style={{
+                  borderColor: isDark ? 'rgba(140, 29, 64, 0.4)' : 'rgba(140, 29, 64, 0.3)',
+                  backgroundColor: isDark ? '#1a1a1a' : '#ffffff',
+                }}>
+                  <div className="p-4 rounded-lg inline-block mb-4" style={{
+                    backgroundColor: isDark ? 'rgba(140, 29, 64, 0.2)' : 'rgba(140, 29, 64, 0.1)',
+                  }}>
+                    <svg className="w-12 h-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: '#8C1D40' }}>
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-semibold mb-2" style={{ color: isDark ? '#f5f5f5' : '#1a1a1a' }}>
+                    No Sprints Generated Yet
+                  </h3>
+                  <p className="text-sm mb-6 max-w-2xl mx-auto" style={{ color: isDark ? '#aaa' : '#666' }}>
+                    To see sprints and user stories, you need to process an SRS document first.
+                  </p>
+                  <div className="max-w-2xl mx-auto space-y-4">
+                    <div className="p-4 rounded-lg text-left" style={{
+                      backgroundColor: isDark ? 'rgba(255, 198, 39, 0.1)' : 'rgba(255, 198, 39, 0.05)',
+                      border: `1px solid ${isDark ? 'rgba(255, 198, 39, 0.2)' : 'rgba(255, 198, 39, 0.3)'}`,
+                    }}>
+                      <p className="text-sm font-semibold mb-2" style={{ color: '#FFC627' }}>
+                        Option 1: Use Cursor with MCP (Recommended)
+                      </p>
+                      <p className="text-xs" style={{ color: isDark ? '#aaa' : '#666' }}>
+                        In Cursor, ask: <code className="px-2 py-1 rounded text-xs" style={{
+                          backgroundColor: isDark ? 'rgba(140, 29, 64, 0.2)' : 'rgba(140, 29, 64, 0.1)',
+                          color: '#8C1D40'
+                        }}>"Read the SRS document from Google Docs at [URL] and send sprints to the dashboard"</code>
+                      </p>
+                    </div>
+                    <div className="p-4 rounded-lg text-left" style={{
+                      backgroundColor: isDark ? 'rgba(140, 29, 64, 0.1)' : 'rgba(140, 29, 64, 0.05)',
+                      border: `1px solid ${isDark ? 'rgba(140, 29, 64, 0.2)' : 'rgba(140, 29, 64, 0.3)'}`,
+                    }}>
+                      <p className="text-sm font-semibold mb-2" style={{ color: isDark ? '#f5f5f5' : '#1a1a1a' }}>
+                        Option 2: Test with Script
+                      </p>
+                      <p className="text-xs mb-2" style={{ color: isDark ? '#aaa' : '#666' }}>
+                        Run the test script from the project root:
+                      </p>
+                      <code className="block px-3 py-2 rounded text-xs" style={{
+                        backgroundColor: isDark ? '#2a2a2a' : '#f5f5f5',
+                        color: isDark ? '#f5f5f5' : '#1a1a1a',
+                      }}>
+                        ./test_srs_processing.sh
+                      </code>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {sprints.length > 0 && (
+              <div className="mt-12">
+                <div className="flex justify-between items-center mb-6">
+                  <h2
+                    className="text-2xl font-bold"
+                    style={{ color: isDark ? '#f5f5f5' : '#1a1a1a' }}
+                  >
+                    Sprints
+                  </h2>
+                  <span
+                    className="text-sm px-3 py-1 rounded-full"
+                    style={{
+                      backgroundColor: isDark
+                        ? 'rgba(34, 197, 94, 0.15)'
+                        : 'rgba(34, 197, 94, 0.1)',
+                      color: '#22C55E',
+                      border: `1px solid ${isDark ? 'rgba(34, 197, 94, 0.3)' : 'rgba(34, 197, 94, 0.2)'}`
+                    }}
+                  >
+                    {sprints.length} sprints • {sprints.reduce((sum, s) => sum + s.totalStoryPoints, 0)} total SP
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {sprints.map(sprint => (
+                    <div
+                      key={sprint.id}
+                      onClick={() => setSelectedSprint(selectedSprint?.id === sprint.id ? null : sprint)}
+                      className="cursor-pointer"
+                    >
+                      <SprintCard sprint={sprint} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* User Stories Section */}
+            {selectedSprint && selectedSprint.userStories && selectedSprint.userStories.length > 0 && (
+              <div className="mt-12">
+                <div className="flex justify-between items-center mb-6">
+                  <div>
+                    <h2
+                      className="text-2xl font-bold"
+                      style={{ color: isDark ? '#f5f5f5' : '#1a1a1a' }}
+                    >
+                      User Stories
+                    </h2>
+                    <p className="text-sm mt-1" style={{ color: isDark ? '#aaa' : '#666' }}>
+                      {selectedSprint.name}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setSelectedSprint(null)}
+                    className="text-sm font-medium transition-colors"
+                    style={{ color: isDark ? '#aaa' : '#666' }}
+                  >
+                    Close
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {selectedSprint.userStories.map(story => (
+                    <UserStoryCard key={story.id} story={story} />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* All User Stories (when no sprint selected) */}
+            {!selectedSprint && sprints.length > 0 && (
+              <div className="mt-12">
+                <div className="flex justify-between items-center mb-6">
+                  <h2
+                    className="text-2xl font-bold"
+                    style={{ color: isDark ? '#f5f5f5' : '#1a1a1a' }}
+                  >
+                    All User Stories
+                  </h2>
+                  <span
+                    className="text-sm px-3 py-1 rounded-full"
+                    style={{
+                      backgroundColor: isDark
+                        ? 'rgba(255, 198, 39, 0.15)'
+                        : 'rgba(255, 198, 39, 0.1)',
+                      color: '#FFC627',
+                    }}
+                  >
+                    {sprints.reduce((sum, s) => sum + (s.userStories?.length || 0), 0)} stories
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {sprints.flatMap(sprint => 
+                    (sprint.userStories || []).map(story => (
+                      <div key={story.id}>
+                        <UserStoryCard story={story} />
+                        <p className="text-xs mt-2 text-center" style={{ color: isDark ? '#888' : '#999' }}>
+                          {sprint.name}
+                        </p>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
           </>
         )}
 

@@ -1,16 +1,25 @@
 import httpx
+import logging
 from app.config import settings
 from typing import Optional, List
 
+logger = logging.getLogger(__name__)
+
 class AIService:
     def __init__(self):
-        self.api_key = settings.CLAUDE_API_KEY
+        self.api_key = settings.CLAUDE_API_KEY or settings.ANTHROPIC_API_KEY
         self.api_url = "https://api.anthropic.com/v1/messages"
         self.headers = {
-            "x-api-key": self.api_key,
+            "anthropic-api-key": self.api_key,
             "anthropic-version": "2023-06-01",
             "content-type": "application/json",
         } if self.api_key else {}
+        
+        # Log API key status (first 10 chars only for security)
+        if self.api_key:
+            logger.info(f"Claude API key configured: {self.api_key[:10]}...")
+        else:
+            logger.warning("Claude API key not configured")
 
     async def get_assignment_recommendation(
         self,
