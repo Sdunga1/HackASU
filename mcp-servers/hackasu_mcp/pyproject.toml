@@ -3,14 +3,14 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "github-mcp"
+name = "hackasu-mcp"
 version = "0.1.0"
-description = "GitHub MCP Server - Model Context Protocol integration for GitHub API"
+description = "HackASU MCP Server - Unified GitHub and Jira integration"
 readme = "README.md"
 license = { text = "MIT" }
 authors = [{ name = "HackASU Team" }]
 requires-python = ">=3.10"
-keywords = ["mcp", "github", "model-context-protocol", "project-management"]
+keywords = ["mcp", "github", "jira", "model-context-protocol", "project-management"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -31,12 +31,12 @@ dependencies = [
 
 [project.urls]
 Homepage = "https://github.com/Sdunga1/HackASU"
-Documentation = "https://github.com/Sdunga1/HackASU/blob/main/mcp-servers/github-mcp/README.md"
+Documentation = "https://github.com/Sdunga1/HackASU/blob/main/mcp-servers/hackasu_mcp/README.md"
 Repository = "https://github.com/Sdunga1/HackASU.git"
 
 [project.scripts]
-github-mcp = "github_mcp.cli:main"
+hackasu-mcp = "cli:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["github_mcp"]
+packages = ["."]
 
